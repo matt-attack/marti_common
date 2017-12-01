@@ -1,35 +1,37 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(swri_math_util)
 
-find_package(catkin REQUIRED COMPONENTS
-  roscpp
-)
+# Add support for C++11
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 11)
+endif()
+
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+
+set(INCLUDE_DIRS include ${ament_cmake_INCLUDE_DIRS} ${rclcpp_INCLUDE_DIRS})
+include_directories(${INCLUDE_DIRS})
+
+set(LIBRARY_DIRS ${ament_cmake_LIBRARY_DIRS} ${rclcpp_LIBRARY_DIRS})
+
+link_directories(${LIBRARY_DIRS})
+
+set(LIBS ${ament_cmake_LIBRARIES} ${rclcpp_LIBRARIES})
 
 # The Boost Random library headers and namespaces changed between version
 # 1.46 and 1.47
-find_package(Boost COMPONENTS random) 
+find_package(Boost COMPONENTS random)
 if(${Boost_LIB_VERSION} MATCHES "1_46*")
-  add_definitions( -DBOOST_1_46 )
+  add_definitions(-DBOOST_1_46)
 endif(${Boost_LIB_VERSION} MATCHES "1_46*")
 
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS roscpp
+add_library(${PROJECT_NAME} src/math_util.cpp src/trig_util.cpp src/random.cpp
+#  src/interpolation_1d.cpp
 )
+target_link_libraries(${PROJECT_NAME} ${LIBS} ${Boost_LIBRARIES})
 
-include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
-  
-add_library(${PROJECT_NAME}
-  src/math_util.cpp
-  src/trig_util.cpp
-  src/random.cpp
-  src/interpolation_1d.cpp)
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
-
-if(CATKIN_ENABLE_TESTING)
+if(BUILD_TESTING)
   find_package(rostest REQUIRED)
-  
   add_rostest_gtest(test_trig_util launch/trig_util.test test/test_trig_util.cpp)
   target_link_libraries(test_trig_util ${PROJECT_NAME})
 
@@ -41,13 +43,21 @@ if(CATKIN_ENABLE_TESTING)
 endif()
 
 install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  FILES_MATCHING PATTERN "*.h"
-)
+  DESTINATION include/${PROJECT_NAME}
+  FILES_MATCHING
+  PATTERN "*.h")
 
 install(TARGETS ${PROJECT_NAME}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-)
+  RUNTIME
+  DESTINATION lib/${PROJECT_NAME}
+  LIBRARY
+  DESTINATION lib
+  ARCHIVE
+  DESTINATION lib)
 
+ament_export_dependencies(ament_cmake)
+ament_export_dependencies(rclcpp)
+ament_export_include_directories(${INCLUDE_DIRS})
+ament_export_libraries(${PROJECT_NAME} ${LIBS})
+
+ament_package()

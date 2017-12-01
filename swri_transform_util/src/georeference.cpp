@@ -35,7 +35,7 @@
 #include <boost/filesystem.hpp>
 
 // ROS libraries
-#include <ros/ros.h>
+//#include <ros/ros.h>
 #include <swri_yaml_util/yaml_util.h>
 
 namespace swri_transform_util
@@ -88,7 +88,7 @@ namespace swri_transform_util
     YAML::Node doc;
     if (!swri_yaml_util::LoadFile(path_, doc))
     {
-      ROS_ERROR("Failed to load file: %s", path_.c_str());
+      printf("ERROR: Failed to load file: %s", path_.c_str());
       return false;
     }
 
@@ -96,7 +96,7 @@ namespace swri_transform_util
     {
       if (!swri_yaml_util::FindValue(doc, "image_path"))
       {
-        ROS_ERROR("Georeference missing image_path.");
+        printf("ERROR: Georeference missing image_path.");
         return false;
       }
       doc["image_path"] >> image_path_;
@@ -111,26 +111,26 @@ namespace swri_transform_util
         boost::filesystem::path geoPath(path_);
         image_path_ = (geoPath.parent_path() / imagePath.relative_path()).normalize().string();
 
-        ROS_INFO("georeference: Image path is %s", image_path_.c_str());
+        printf("INFO: georeference: Image path is %s", image_path_.c_str());
       }
 
       if (!swri_yaml_util::FindValue(doc, "image_width"))
       {
-        ROS_ERROR("Georeference missing image_width.");
+        printf("ERROR: Georeference missing image_width.");
         return false;
       }
       doc["image_width"] >> width_;
 
       if (!swri_yaml_util::FindValue(doc, "image_height"))
       {
-        ROS_ERROR("Georeference missing image_height.");
+        printf("ERROR: Georeference missing image_height.");
         return false;
       }
       doc["image_height"] >> height_;
       
       if (!swri_yaml_util::FindValue(doc, "tile_size"))
       {
-        ROS_ERROR("Georeference missing tile_size.");
+        printf("ERROR: Georeference missing tile_size.");
         return false;
       }
       doc["tile_size"] >> tile_size_;
@@ -142,14 +142,14 @@ namespace swri_transform_util
 
       if (!swri_yaml_util::FindValue(doc, "datum"))
       {
-        ROS_ERROR("Georeference missing datum.");
+        printf("ERROR: Georeference missing datum.");
         return false;
       }
       doc["datum"] >> datum_;
 
       if (!swri_yaml_util::FindValue(doc, "projection"))
       {
-        ROS_ERROR("Georeference missing projection.");
+        printf("ERROR: Georeference missing projection.");
         return false;
       }
       doc["projection"] >> projection_;
@@ -157,23 +157,23 @@ namespace swri_transform_util
       // Parse in the tiepoints
       if (!swri_yaml_util::FindValue(doc, "tiepoints"))
       {
-        ROS_ERROR("Georeference missing tiepoints.");
+        printf("ERROR: Georeference missing tiepoints.");
         return false;
       }
       pixels_ = cv::Mat(1, doc["tiepoints"].size(), CV_32SC2);
       coordinates_ = cv::Mat(1, doc["tiepoints"].size(), CV_64FC2);
-      ROS_INFO("georeference: Found %d tiepoints", (int32_t)(doc["tiepoints"].size()));
+      printf("INFO: georeference: Found %d tiepoints", (int32_t)(doc["tiepoints"].size()));
       for (size_t i = 0; i < doc["tiepoints"].size(); i++)
       {
 		if (!swri_yaml_util::FindValue(doc["tiepoints"][i], "point"))
 		{
-		  ROS_ERROR("Georeference tiepoint %zu missing point.", i);
+		  printf("ERROR: Georeference tiepoint %zu missing point.", i);
 		  return false;
         }
 
         if (doc["tiepoints"][i]["point"].size() != 4)
         {
-		  ROS_ERROR("Georeference tiepoint %zu size != 4.", i);
+		  printf("ERROR: Georeference tiepoint %zu size != 4.", i);
 		  return false;
         }
 
@@ -195,7 +195,7 @@ namespace swri_transform_util
         GetTransform();
         if (transform_.empty())
         {
-          ROS_ERROR("Failed to calculate georeference transform.");
+          printf("ERROR: Failed to calculate georeference transform.");
           return false;
         }
       }
@@ -215,7 +215,7 @@ namespace swri_transform_util
       }
       else
       {
-        ROS_ERROR("georeference: At least 3 tiepoints required.");
+        printf("ERROR: georeference: At least 3 tiepoints required.");
         return false;
       }
 
@@ -223,12 +223,12 @@ namespace swri_transform_util
     }
     catch (const YAML::ParserException& e)
     {
-      ROS_ERROR("%s", e.what());
+      printf("ERROR: %s", e.what());
       return false;
     }
     catch (const YAML::Exception& e)
     {
-      ROS_ERROR("%s", e.what());
+      printf("ERROR: %s", e.what());
       return false;
     }
 
@@ -296,36 +296,36 @@ namespace swri_transform_util
 
   void GeoReference::Print()
   {
-    ROS_INFO("georeference:  path = %s", path_.c_str());
-    ROS_INFO("georeference:  image = %s", image_path_.c_str());
-    ROS_INFO("georeference:  width = %d", width_);
-    ROS_INFO("georeference:  height = %d", height_);
-    ROS_INFO("georeference:  tile_size = %d", tile_size_);
-    ROS_INFO("georeference:  extension = %s", extension_.c_str());
-    ROS_INFO("georeference:  datum = %s", datum_.c_str());
-    ROS_INFO("georeference:  projection = %s", projection_.c_str());
+    printf("INFO: georeference:  path = %s", path_.c_str());
+    printf("INFO: georeference:  image = %s", image_path_.c_str());
+    printf("INFO: georeference:  width = %d", width_);
+    printf("INFO: georeference:  height = %d", height_);
+    printf("INFO: georeference:  tile_size = %d", tile_size_);
+    printf("INFO: georeference:  extension = %s", extension_.c_str());
+    printf("INFO: georeference:  datum = %s", datum_.c_str());
+    printf("INFO: georeference:  projection = %s", projection_.c_str());
 
-    ROS_INFO("georeference:  tiepoints");
+    printf("INFO: georeference:  tiepoints");
     for (int i = 0; i < pixels_.cols; i++)
     {
-      ROS_INFO("georeference:     [%d, %d, %lf, %lf]",
+      printf("INFO: georeference:     [%d, %d, %lf, %lf]",
           pixels_.at<cv::Vec2i>(0, i)[0],
           pixels_.at<cv::Vec2i>(0, i)[1],
           coordinates_.at<cv::Vec2d>(0, i)[0],
           coordinates_.at<cv::Vec2d>(0, i)[1]);
     }
 
-    ROS_INFO("georeference:  transform: %8lf, %8lf, %8lf",
+    printf("INFO: georeference:  transform: %8lf, %8lf, %8lf",
         transform_.at<double>(0, 0),
         transform_.at<double>(0, 1),
         transform_.at<double>(0, 2) + x_offset_);
 
-    ROS_INFO("georeference:             %8lf, %8lf, %8lf",
+    printf("INFO: georeference:             %8lf, %8lf, %8lf",
         transform_.at<double>(1, 0),
         transform_.at<double>(1, 1),
         transform_.at<double>(1, 2) + y_offset_);
 
-    ROS_INFO("georeference:             %8lf, %8lf, %8lf", 0.0, 0.0, 1.0);
+    printf("INFO: georeference:             %8lf, %8lf, %8lf", 0.0, 0.0, 1.0);
   }
 }
 

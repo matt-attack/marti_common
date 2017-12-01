@@ -36,8 +36,8 @@
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <tf/transform_datatypes.h>
-#include <tf/transform_listener.h>
+#include <tf2/transform_datatypes.h>
+#include <tf2_ros/transform_listener.h>
 
 #include <swri_transform_util/local_xy_util.h>
 #include <swri_transform_util/transform.h>
@@ -49,9 +49,9 @@ namespace swri_transform_util
   typedef std::map<std::string, TransformerMap> SourceTargetMap;
 
   /**
-   * Wrapper around tf::TransformListener to support non-TF transforms
+   * Wrapper around tf2::TransformListener to support non-TF transforms
    *
-   * TransformManager wraps tf::TransformListener and provides a similar
+   * TransformManager wraps tf2::TransformListener and provides a similar
    * interface to get Transforms between TF frames, UTM, and WGS84.
    *
    * TransformManager uses PluginLib to load all of the
@@ -66,15 +66,16 @@ namespace swri_transform_util
     ~TransformManager();
 
     /**
-     * Initialize the TransformManager with a tf::TransformListener
+     * Initialize the TransformManager with a tf2::TransformListener
      *
      * The TransformManager must be initialized before it can be used.
      *
-     * @param tf A shared pointer to a tf::TransformListener that the
+     * @param tf A shared pointer to a tf2::TransformListener that the
      *    Transformer wraps.
      */
-    void Initialize(boost::shared_ptr<tf::TransformListener> tf
-        = boost::make_shared<tf::TransformListener>());
+    void Initialize(std::shared_ptr<rclcpp::node::Node> handle, 
+        boost::shared_ptr<tf2_ros::Buffer> tf = boost::shared_ptr<tf2_ros::Buffer>());
+        //= boost::make_shared<tf2_ros::Buffer>());
 
     /**
      * Get the Transform between two frames at a specified time
@@ -98,7 +99,7 @@ namespace swri_transform_util
     bool GetTransform(
         const std::string& target_frame,
         const std::string& source_frame,
-        const ros::Time& time,
+        const rclcpp::Time& time,
         Transform& transform) const;
 
     /**
@@ -156,8 +157,8 @@ namespace swri_transform_util
     bool GetTransform(
         const std::string& target_frame,
         const std::string& source_frame,
-        const ros::Time& time,
-        tf::StampedTransform& transform) const;
+        const rclcpp::Time& time,
+        geometry_msgs::msg::TransformStamped& transform) const;
 
     /**
      * Get the most recent tf::Transform between two frames
@@ -174,10 +175,12 @@ namespace swri_transform_util
     bool GetTransform(
         const std::string& target_frame,
         const std::string& source_frame,
-        tf::StampedTransform& transform) const;
+        geometry_msgs::msg::TransformStamped& transform) const;
 
   private:
-    boost::shared_ptr<tf::TransformListener> tf_listener_;
+    std::shared_ptr<rclcpp::node::Node> handle_;
+    boost::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+    boost::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 
     boost::shared_ptr<LocalXyWgs84Util> local_xy_util_;
 

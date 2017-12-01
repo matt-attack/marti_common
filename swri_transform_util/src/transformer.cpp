@@ -40,8 +40,10 @@ namespace swri_transform_util
   }
 
   void Transformer::Initialize(
-      const boost::shared_ptr<tf::TransformListener> tf)
+      std::shared_ptr<rclcpp::node::Node> handle,
+      const boost::shared_ptr<tf2_ros::Buffer> tf)
   {
+    handle_ = handle;
     tf_listener_ = tf;
     initialized_ = Initialize();
   }
@@ -54,8 +56,8 @@ namespace swri_transform_util
   bool Transformer::GetTransform(
       const std::string& target_frame,
       const std::string& source_frame,
-      const ros::Time& time,
-      tf::StampedTransform& transform) const
+      const rclcpp::Time& time,
+      geometry_msgs::msg::TransformStamped& transform) const
   {
     if (!tf_listener_)
     {
@@ -65,38 +67,38 @@ namespace swri_transform_util
     bool has_transform = false;
     try
     {
-      if (tf_listener_->frameExists(target_frame) &&
-          tf_listener_->frameExists(source_frame) &&
-          tf_listener_->waitForTransform(
-          target_frame,
-          source_frame,
-          time,
-          ros::Duration(0.01)))
+      if (tf_listener_->_frameExists(target_frame) &&
+          tf_listener_->_frameExists(source_frame))
+          //tf_listener_->lookupTransform(
+          //target_frame,
+          //source_frame,
+          //tf2::timeFromSec(time.nanoseconds()/1000000000.0),
+          //tf2::durationFromSec(0.01)))
       {
-        tf_listener_->lookupTransform(
+        transform = tf_listener_->lookupTransform(
             target_frame,
             source_frame,
-            time,
-            transform);
+            tf2::timeFromSec(time.nanoseconds()/1000000000.0),
+            tf2::durationFromSec(0.01));
 
         has_transform = true;
       }
     }
-    catch (const tf::LookupException& e)
+    catch (const tf2::LookupException& e)
     {
-      ROS_ERROR_THROTTLE(2.0, "[transformer]: %s", e.what());
+      printf("ERROR: [transformer]: %s", e.what());
     }
-    catch (const tf::ConnectivityException& e)
+    catch (const tf2::ConnectivityException& e)
     {
-      ROS_ERROR_THROTTLE(2.0, "[transformer]: %s", e.what());
+      printf("ERROR: [transformer]: %s", e.what());
     }
-    catch (const tf::ExtrapolationException& e)
+    catch (const tf2::ExtrapolationException& e)
     {
-      ROS_ERROR_THROTTLE(2.0, "[transformer]: %s", e.what());
+      printf("ERROR: [transformer]: %s", e.what());
     }
     catch (...)
     {
-      ROS_ERROR_THROTTLE(2.0, "[transformer]: Exception looking up transform");
+      printf("ERROR: [transformer]: Exception looking up transform");
     }
 
     return has_transform;

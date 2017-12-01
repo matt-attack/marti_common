@@ -32,7 +32,7 @@
 #include <string>
 #include <vector>
 
-#include <ros/node_handle.h>
+#include <rclcpp/rclcpp.hpp>
 
 namespace swri_math_util
 {

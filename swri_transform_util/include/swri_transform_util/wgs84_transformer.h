@@ -36,8 +36,10 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <tf/transform_datatypes.h>
-#include <tf/transform_listener.h>
+#include <rclcpp/time.hpp>
+
+#include <tf2/transform_datatypes.h>
+//#include <tf2/transform_listener.h>
 
 #include <swri_transform_util/local_xy_util.h>
 #include <swri_transform_util/transformer.h>
@@ -78,7 +80,7 @@ namespace swri_transform_util
       virtual bool GetTransform(
         const std::string& target_frame,
         const std::string& source_frame,
-        const ros::Time& time,
+        const rclcpp::Time& time,
         Transform& transform);
 
     protected:
@@ -107,7 +109,7 @@ namespace swri_transform_util
      *    local XY origin frame to WGS84 coordinates
      */
     TfToWgs84Transform(
-      const tf::StampedTransform& transform,
+      const geometry_msgs::msg::TransformStamped& transform,
       boost::shared_ptr<LocalXyWgs84Util> local_xy_util);
 
     /**
@@ -121,7 +123,7 @@ namespace swri_transform_util
      * @param[out] v_out Output vector. x is the longitude in degrees, y is the
      *    latitude in degrees, and z is the altitude in meters.
      */
-    virtual void Transform(const tf::Vector3& v_in, tf::Vector3& v_out) const;
+    virtual void Transform(const tf2::Vector3& v_in, tf2::Vector3& v_out) const;
 
     /**
      * Get the orientation of the transform.
@@ -133,11 +135,11 @@ namespace swri_transform_util
      *
      * @return The orientation of the transform
      */
-    virtual tf::Quaternion GetOrientation() const;
+    virtual tf2::Quaternion GetOrientation() const;
     virtual TransformImplPtr Inverse() const;
 
   protected:
-    tf::StampedTransform transform_;
+    geometry_msgs::msg::TransformStamped transform_;
     boost::shared_ptr<LocalXyWgs84Util> local_xy_util_;
   };
 
@@ -160,7 +162,7 @@ namespace swri_transform_util
        *    coordinates to the local XY origin frame
        */
     Wgs84ToTfTransform(
-      const tf::StampedTransform& transform,
+      const geometry_msgs::msg::TransformStamped& transform,
       boost::shared_ptr<LocalXyWgs84Util> local_xy_util);
 
     /**
@@ -174,7 +176,7 @@ namespace swri_transform_util
      *    latitude in degrees, and z is the altitude in meters.
      * @param[out] v_out Output vector in the 'transform' child frame.
      */
-    virtual void Transform(const tf::Vector3& v_in, tf::Vector3& v_out) const;
+    virtual void Transform(const tf2::Vector3& v_in, tf2::Vector3& v_out) const;
 
     /**
      * Get the orientation of the transform.
@@ -186,10 +188,10 @@ namespace swri_transform_util
      *
      * @return The orientation of the transform
      */
-    virtual tf::Quaternion GetOrientation() const;
+    virtual tf2::Quaternion GetOrientation() const;
     virtual TransformImplPtr Inverse() const;
   protected:
-    tf::StampedTransform transform_;
+    geometry_msgs::msg::TransformStamped transform_;
     boost::shared_ptr<LocalXyWgs84Util> local_xy_util_;
   };
 }

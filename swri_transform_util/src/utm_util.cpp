@@ -31,7 +31,7 @@
 
 #include <cmath>
 
-#include <ros/ros.h>
+//#include <ros/ros.h>
 
 #include <swri_math_util/constants.h>
 

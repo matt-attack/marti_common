@@ -36,8 +36,8 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <tf/transform_datatypes.h>
-#include <tf/transform_listener.h>
+#include <tf2/transform_datatypes.h>
+//#include <tf2/transform_listener.h>
 
 #include <swri_transform_util/utm_util.h>
 #include <swri_transform_util/local_xy_util.h>
@@ -80,7 +80,7 @@ namespace swri_transform_util
       virtual bool GetTransform(
         const std::string& target_frame,
         const std::string& source_frame,
-        const ros::Time& time,
+        const rclcpp::Time& time,
         Transform& transform);
 
     protected:
@@ -105,19 +105,19 @@ namespace swri_transform_util
   {
   public:
     UtmToTfTransform(
-      const tf::StampedTransform& transform,
+      const geometry_msgs::msg::TransformStamped& transform,
       boost::shared_ptr<UtmUtil> utm_util,
       boost::shared_ptr<LocalXyWgs84Util> local_xy_util,
       int32_t utm_zone,
       char utm_band);
 
-    virtual void Transform(const tf::Vector3& v_in, tf::Vector3& v_out) const;
+    virtual void Transform(const tf2::Vector3& v_in, tf2::Vector3& v_out) const;
 
-    virtual tf::Quaternion GetOrientation() const;
+    virtual tf2::Quaternion GetOrientation() const;
     virtual TransformImplPtr Inverse() const;
 
   protected:
-    tf::StampedTransform transform_;
+    geometry_msgs::msg::TransformStamped transform_;
     boost::shared_ptr<UtmUtil> utm_util_;
     boost::shared_ptr<LocalXyWgs84Util> local_xy_util_;
     int32_t utm_zone_;
@@ -135,19 +135,19 @@ namespace swri_transform_util
   {
   public:
     TfToUtmTransform(
-      const tf::StampedTransform& transform,
+      const geometry_msgs::msg::TransformStamped& transform,
       boost::shared_ptr<UtmUtil> utm_util,
       boost::shared_ptr<LocalXyWgs84Util> local_xy_util,
       int32_t utm_zone,
       char utm_band);
 
-    virtual void Transform(const tf::Vector3& v_in, tf::Vector3& v_out) const;
+    virtual void Transform(const tf2::Vector3& v_in, tf2::Vector3& v_out) const;
 
-    virtual tf::Quaternion GetOrientation() const;
+    virtual tf2::Quaternion GetOrientation() const;
     virtual TransformImplPtr Inverse() const;
 
   protected:
-    tf::StampedTransform transform_;
+    geometry_msgs::msg::TransformStamped transform_;
     boost::shared_ptr<UtmUtil> utm_util_;
     boost::shared_ptr<LocalXyWgs84Util> local_xy_util_;
     int32_t utm_zone_;
@@ -169,7 +169,7 @@ namespace swri_transform_util
         int32_t utm_zone,
         char utm_band);
 
-    virtual void Transform(const tf::Vector3& v_in, tf::Vector3& v_out) const;
+    virtual void Transform(const tf2::Vector3& v_in, tf2::Vector3& v_out) const;
     virtual TransformImplPtr Inverse() const;
 
   protected:
@@ -192,7 +192,7 @@ namespace swri_transform_util
         int32_t utm_zone,
         char utm_band);
 
-    virtual void Transform(const tf::Vector3& v_in, tf::Vector3& v_out) const;
+    virtual void Transform(const tf2::Vector3& v_in, tf2::Vector3& v_out) const;
     virtual TransformImplPtr Inverse() const;
 
   protected:

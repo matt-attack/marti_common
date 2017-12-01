@@ -38,12 +38,12 @@ namespace swri_transform_util
   {
   }
 
-  Transform::Transform(const tf::Transform& transform) :
+  Transform::Transform(const tf2::Transform& transform) :
     transform_(boost::make_shared<TfTransform>(transform))
   {
   }
   
-  Transform::Transform(const tf::StampedTransform& transform) :
+  Transform::Transform(const geometry_msgs::msg::TransformStamped& transform) :
     transform_(boost::make_shared<TfTransform>(transform))
   {
   }
@@ -53,7 +53,7 @@ namespace swri_transform_util
   {
   }
 
-  Transform& Transform::operator=(const tf::Transform transform)
+  Transform& Transform::operator=(const tf2::Transform transform)
   {
     transform_ = boost::make_shared<TfTransform>(transform);
 
@@ -67,41 +67,41 @@ namespace swri_transform_util
     return *this;
   }
 
-  tf::Vector3 Transform::operator()(const tf::Vector3& v) const
+  tf2::Vector3 Transform::operator()(const tf2::Vector3& v) const
   {
-    tf::Vector3 transformed;
+    tf2::Vector3 transformed;
 
     transform_->Transform(v, transformed);
 
     return transformed;
   }
 
-  tf::Vector3 Transform::operator*(const tf::Vector3& v) const
+  tf2::Vector3 Transform::operator*(const tf2::Vector3& v) const
   {
-    tf::Vector3 transformed;
+    tf2::Vector3 transformed;
 
     transform_->Transform(v, transformed);
 
     return transformed;
   }
   
-  tf::Quaternion Transform::operator*(const tf::Quaternion& q) const
+  tf2::Quaternion Transform::operator*(const tf2::Quaternion& q) const
   {
-    tf::Quaternion transformed = q;
+    tf2::Quaternion transformed = q;
 
     return q * GetOrientation();
   }
 
-  tf::Vector3 Transform::GetOrigin() const
+  tf2::Vector3 Transform::GetOrigin() const
   {
-    tf::Vector3 origin;
+    tf2::Vector3 origin;
 
-    transform_->Transform(tf::Vector3(0, 0, 0), origin);
+    transform_->Transform(tf2::Vector3(0, 0, 0), origin);
 
     return origin;
   }
 
-  tf::Quaternion Transform::GetOrientation() const
+  tf2::Quaternion Transform::GetOrientation() const
   {
     return transform_->GetOrientation();
   }
@@ -111,12 +111,12 @@ namespace swri_transform_util
     return Transform(transform_->Inverse());
   }
 
-  tf::Transform Transform::GetTF() const
+  tf2::Transform Transform::GetTF() const
   {
-    return tf::Transform(GetOrientation(),GetOrigin());
+    return tf2::Transform(GetOrientation(),GetOrigin());
   }
 
-  void IdentityTransform::Transform(const tf::Vector3& v_in, tf::Vector3& v_out) const
+  void IdentityTransform::Transform(const tf2::Vector3& v_in, tf2::Vector3& v_out) const
   {
     v_out = v_in;
   }
@@ -129,24 +129,25 @@ namespace swri_transform_util
     return inverse;
   }
 
-  TfTransform::TfTransform(const tf::Transform& transform) :
+  TfTransform::TfTransform(const tf2::Transform& transform) :
     transform_(transform)
   {
-    stamp_ = ros::Time::now();
+    stamp_ = rclcpp::Time::now();
   }
   
-  TfTransform::TfTransform(const tf::StampedTransform& transform) :
-    transform_(transform)
+  TfTransform::TfTransform(const geometry_msgs::msg::TransformStamped& transform) //:
+   // transform_(transform)
   {
-    stamp_ = transform.stamp_;
+    tf2::fromMsg(transform, transform_);
+    stamp_ = transform.header.stamp;
   }
 
-  void TfTransform::Transform(const tf::Vector3& v_in, tf::Vector3& v_out) const
+  void TfTransform::Transform(const tf2::Vector3& v_in, tf2::Vector3& v_out) const
   {
     v_out = transform_ * v_in;
   }
   
-  tf::Quaternion TfTransform::GetOrientation() const
+  tf2::Quaternion TfTransform::GetOrientation() const
   {
     return transform_.getRotation();
   }

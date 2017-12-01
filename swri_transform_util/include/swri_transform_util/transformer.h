@@ -36,8 +36,8 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <tf/transform_datatypes.h>
-#include <tf/transform_listener.h>
+#include <tf2/transform_datatypes.h>
+#include <tf2_ros/transform_listener.h>
 
 #include <swri_transform_util/transform.h>
 
@@ -63,7 +63,7 @@ namespace swri_transform_util
        *    node use the same tf::TransformListener to reduce redundant
        *    computation.
        */
-      void Initialize(const boost::shared_ptr<tf::TransformListener> tf);
+      void Initialize(std::shared_ptr<rclcpp::node::Node> handle_, const boost::shared_ptr<tf2_ros::Buffer> tf);
 
       /**
        * Get a map of the transforms supported by this Transformer
@@ -91,20 +91,21 @@ namespace swri_transform_util
       virtual bool GetTransform(
         const std::string& target_frame,
         const std::string& source_frame,
-        const ros::Time& time,
+        const rclcpp::Time& time,
         Transform& transform) = 0;
 
     protected:
       bool initialized_;
-      boost::shared_ptr<tf::TransformListener> tf_listener_;
+      boost::shared_ptr<tf2_ros::Buffer> tf_listener_;
+      std::shared_ptr<rclcpp::node::Node> handle_;
 
       virtual bool Initialize();
 
       virtual bool GetTransform(
           const std::string& target_frame,
           const std::string& source_frame,
-          const ros::Time& time,
-          tf::StampedTransform& transform) const;
+          const rclcpp::Time& time,
+          geometry_msgs::msg::TransformStamped& transform) const;
   };
 }
 

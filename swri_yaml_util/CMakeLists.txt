@@ -1,21 +1,30 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(swri_yaml_util)
 
-find_package(catkin REQUIRED)
+# Add support for C++11
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 11)
+endif()
+
+find_package(ament_cmake REQUIRED)
+
+set(INCLUDE_DIRS include ${ament_cmake_INCLUDE_DIRS} ${swri_yaml_util_BINARY_DIR}/include)
+include_directories(${INCLUDE_DIRS})
+
+set(LIBRARY_DIRS ${ament_cmake_LIBRARY_DIRS})
+
+link_directories(${LIBRARY_DIRS})
+
+set(LIBS ${ament_cmake_LIBRARIES})
 
 find_package(PkgConfig)
 pkg_check_modules(YamlCpp yaml-cpp)
 message(STATUS "YAML-CPP VERSION: " ${YamlCpp_VERSION})
 message(STATUS "YAML-CPP LIBRARY: " ${YamlCpp_LIBRARIES})
 
-catkin_destinations()
-file(MAKE_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_INCLUDE_DESTINATION})
-catkin_package(
-  INCLUDE_DIRS include ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}
-  LIBRARIES ${PROJECT_NAME} ${YamlCpp_LIBRARIES}
-)
+file(MAKE_DIRECTORY include/${PROJECT_NAME})
 
-if( ${YamlCpp_VERSION} MATCHES "0.[23].*")
+if(${YamlCpp_VERSION} MATCHES "0.[23].*")
   set(YAMLCPP_OLD_API ON)
   message(STATUS "  Using old yaml-cpp API.")
 else()
@@ -23,35 +32,34 @@ else()
   message(STATUS "  Using new yaml-cpp API.")
 endif()
 
-configure_file(version.h.in ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_INCLUDE_DESTINATION}/version.h)
+configure_file(version.h.in
+  include/${PROJECT_NAME}/version.h)
+
+message(STATUS "Path: include/" ${PROJECT_NAME})
 
 find_package(Boost REQUIRED)
 
-include_directories(include
-  ${catkin_INCLUDE_DIRS}
-  ${Boost_INCLUDE_DIRS}
-  ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}
-  ${YamlCpp_INCLUDE_DIR}
-)
-
-add_library(${PROJECT_NAME}
-  src/yaml_util.cpp
-)
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${YamlCpp_LIBRARIES})
+add_library(${PROJECT_NAME} src/yaml_util.cpp)
+target_link_libraries(${PROJECT_NAME} ${LIBS} ${YamlCpp_LIBRARIES})
 
 install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  FILES_MATCHING PATTERN "*.h"
-)
+  DESTINATION include/${PROJECT_NAME}
+  FILES_MATCHING
+  PATTERN "*.h")
 
-install(
-  DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_INCLUDE_DESTINATION}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-)
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION include/${PROJECT_NAME})
 
 install(TARGETS ${PROJECT_NAME}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-)
+  RUNTIME
+  DESTINATION lib/${PROJECT_NAME}
+  LIBRARY
+  DESTINATION lib
+  ARCHIVE
+  DESTINATION lib)
 
+ament_export_dependencies(ament_cmake)
+ament_export_include_directories(${INCLUDE_DIRS})
+ament_export_libraries(${PROJECT_NAME} ${LIBS})
+
+ament_package()

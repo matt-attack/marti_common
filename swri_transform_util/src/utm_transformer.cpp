@@ -58,7 +58,7 @@ namespace swri_transform_util
   bool UtmTransformer::GetTransform(
     const std::string& target_frame,
     const std::string& source_frame,
-    const ros::Time& time,
+    const rclcpp::Time& time,
     Transform& transform)
   {
     if (!initialized_)
@@ -83,10 +83,10 @@ namespace swri_transform_util
       }
       else
       {
-        tf::StampedTransform tf_transform;
+        geometry_msgs::msg::TransformStamped tf_transform;
         if (!Transformer::GetTransform(local_xy_frame_, source_frame, time, tf_transform))
         {
-          ROS_WARN_THROTTLE(2.0, "Failed to get transform from %s to local_xy(%s)",
+          printf("WARN: Failed to get transform from %s to local_xy(%s)",
               source_frame.c_str(), local_xy_frame_.c_str());
           return false;
         }
@@ -110,10 +110,10 @@ namespace swri_transform_util
     }
     else if (source_frame == _utm_frame)
     {
-      tf::StampedTransform tf_transform;
+      geometry_msgs::msg::TransformStamped tf_transform;
       if (!Transformer::GetTransform(target_frame, local_xy_frame_, time, tf_transform))
       {
-        ROS_WARN_THROTTLE(2.0, "Failed to get transform from local_xy(%s) to %s",
+        printf("WARN: Failed to get transform from local_xy(%s) to %s",
             local_xy_frame_.c_str(), target_frame.c_str());
         return false;
       }
@@ -128,7 +128,7 @@ namespace swri_transform_util
       return true;
     }
 
-    ROS_WARN_THROTTLE(2.0, "Failed to get UTM transform");
+    printf("WARN: Failed to get UTM transform");
     return false;
   }
 
@@ -136,23 +136,23 @@ namespace swri_transform_util
   {
     if (!local_xy_util_)
     {
-      local_xy_util_ = boost::make_shared<LocalXyWgs84Util>();
+      local_xy_util_ = boost::make_shared<LocalXyWgs84Util>(handle_);
     }
 
     if (local_xy_util_->Initialized())
     {
       std::string local_xy_frame = local_xy_util_->Frame();
-      if (tf_listener_->frameExists(local_xy_frame))
+      if (tf_listener_->_frameExists(local_xy_frame))
       {
         local_xy_frame_ = local_xy_frame;
         initialized_ = true;
       }
-      else if (!local_xy_frame.empty() && local_xy_frame[0] == '/' && tf_listener_->frameExists(local_xy_frame.substr(1)))
+      else if (!local_xy_frame.empty() && local_xy_frame[0] == '/' && tf_listener_->_frameExists(local_xy_frame.substr(1)))
       {
         local_xy_frame_ = local_xy_frame.substr(1);
         initialized_ = true;
       }
-      else if (!local_xy_frame.empty() && local_xy_frame[0] != '/' && tf_listener_->frameExists("/" + local_xy_frame))
+      else if (!local_xy_frame.empty() && local_xy_frame[0] != '/' && tf_listener_->_frameExists("/" + local_xy_frame))
       {
         local_xy_frame_ = "/" + local_xy_frame;
         initialized_ = true;
@@ -169,7 +169,7 @@ namespace swri_transform_util
   }
 
   UtmToTfTransform::UtmToTfTransform(
-      const tf::StampedTransform& transform,
+      const geometry_msgs::msg::TransformStamped& transform,
       boost::shared_ptr<UtmUtil> utm_util,
       boost::shared_ptr<LocalXyWgs84Util> local_xy_util,
       int32_t utm_zone,
@@ -180,10 +180,10 @@ namespace swri_transform_util
       utm_zone_(utm_zone),
       utm_band_(utm_band)
   {
-    stamp_ = transform.stamp_;
+    stamp_ = transform.header.stamp;
   }
 
-  void UtmToTfTransform::Transform(const tf::Vector3& v_in, tf::Vector3& v_out) const
+  void UtmToTfTransform::Transform(const tf2::Vector3& v_in, tf2::Vector3& v_out) const
   {
     // Convert to WGS84 latitude and longitude
     double lat, lon;
@@ -195,23 +195,30 @@ namespace swri_transform_util
 
     // Transform from the LocalXY coordinate frame using the TF transform
     v_out.setValue(x, y, v_in.z());
-    v_out = transform_ * v_out;
+    tf2::Transform tf;
+    tf2::fromMsg(transform_.transform, tf);
+    v_out = tf * v_out;
   }
 
-  tf::Quaternion UtmToTfTransform::GetOrientation() const
+  tf2::Quaternion UtmToTfTransform::GetOrientation() const
   {
-    tf::Quaternion reference_angle = tf::createQuaternionFromYaw(
+    tf2::Quaternion reference_angle;
+    reference_angle.setRPY(0, 0,
       swri_math_util::ToRadians(local_xy_util_->ReferenceAngle()));
 
-    return transform_.getRotation() * reference_angle.inverse();
+    tf2::Transform tf;
+    tf2::fromMsg(transform_.transform, tf);
+    return tf.getRotation() * reference_angle.inverse();
   }
 
   TransformImplPtr UtmToTfTransform::Inverse() const
   {
-    tf::StampedTransform inverse_transform = transform_;
-    inverse_transform.setData(transform_.inverse());
-    inverse_transform.frame_id_ = transform_.child_frame_id_;
-    inverse_transform.child_frame_id_ = transform_.frame_id_;
+    geometry_msgs::msg::TransformStamped inverse_transform = transform_;
+    tf2::Transform tf;
+    tf2::fromMsg(transform_.transform, tf);
+    inverse_transform.transform = tf2::toMsg(tf.inverse());
+    inverse_transform.header.frame_id = transform_.child_frame_id;
+    inverse_transform.child_frame_id = transform_.header.frame_id;
     TransformImplPtr inverse = boost::make_shared<TfToUtmTransform>(
         inverse_transform,
         utm_util_,
@@ -223,7 +230,7 @@ namespace swri_transform_util
   }
 
   TfToUtmTransform::TfToUtmTransform(
-      const tf::StampedTransform& transform,
+      const geometry_msgs::msg::TransformStamped& transform,
       boost::shared_ptr<UtmUtil> utm_util,
       boost::shared_ptr<LocalXyWgs84Util> local_xy_util,
       int32_t utm_zone,
@@ -234,13 +241,15 @@ namespace swri_transform_util
       utm_zone_(utm_zone),
       utm_band_(utm_band)
   {
-    stamp_ = transform.stamp_;
+    stamp_ = transform.header.stamp;
   }
 
-  void TfToUtmTransform::Transform(const tf::Vector3& v_in, tf::Vector3& v_out) const
+  void TfToUtmTransform::Transform(const tf2::Vector3& v_in, tf2::Vector3& v_out) const
   {
     // Transform into the LocalXY coordinate frame using the TF transform
-    tf::Vector3 local_xy = transform_ * v_in;
+    tf2::Transform tf;
+    tf2::fromMsg(transform_.transform, tf);
+    tf2::Vector3 local_xy = tf * v_in;
 
     // Convert to WGS84 latitude and longitude
     double latitude, longitude;
@@ -252,20 +261,25 @@ namespace swri_transform_util
     v_out.setValue(easting, northing, local_xy.z());
   }
 
-  tf::Quaternion TfToUtmTransform::GetOrientation() const
+  tf2::Quaternion TfToUtmTransform::GetOrientation() const
   {
-    tf::Quaternion reference_angle = tf::createQuaternionFromYaw(
+    tf2::Quaternion reference_angle;
+    reference_angle.setRPY(0, 0,
       swri_math_util::ToRadians(local_xy_util_->ReferenceAngle()));
 
-    return transform_.getRotation() * reference_angle;
+    tf2::Transform tf;
+    tf2::fromMsg(transform_.transform, tf);
+    return tf.getRotation() * reference_angle;
   }
 
   TransformImplPtr TfToUtmTransform::Inverse() const
   {
-    tf::StampedTransform inverse_transform = transform_;
-    inverse_transform.setData(transform_.inverse());
-    inverse_transform.frame_id_ = transform_.child_frame_id_;
-    inverse_transform.child_frame_id_ = transform_.frame_id_;
+    geometry_msgs::msg::TransformStamped inverse_transform = transform_;
+    tf2::Transform tf;
+    tf2::fromMsg(transform_.transform, tf);
+    inverse_transform.transform = tf2::toMsg(tf.inverse());
+    inverse_transform.header.frame_id = transform_.child_frame_id;
+    inverse_transform.child_frame_id = transform_.header.frame_id;
     TransformImplPtr inverse = boost::make_shared<UtmToTfTransform>(
         inverse_transform,
         utm_util_,
@@ -284,10 +298,10 @@ namespace swri_transform_util
     utm_zone_(utm_zone),
     utm_band_(utm_band)
   {
-    stamp_ = ros::Time::now();
+    stamp_ = rclcpp::Time::now();
   }
 
-  void UtmToWgs84Transform::Transform(const tf::Vector3& v_in, tf::Vector3& v_out) const
+  void UtmToWgs84Transform::Transform(const tf2::Vector3& v_in, tf2::Vector3& v_out) const
   {
     double lat, lon;
     utm_util_->ToLatLon(utm_zone_, utm_band_, v_in.x(), v_in.y(), lat, lon);
@@ -313,10 +327,10 @@ namespace swri_transform_util
     utm_zone_(utm_zone),
     utm_band_(utm_band)
   {
-    stamp_ = ros::Time::now();
+    stamp_ = rclcpp::Time::now();
   }
 
-  void Wgs84ToUtmTransform::Transform(const tf::Vector3& v_in, tf::Vector3& v_out) const
+  void Wgs84ToUtmTransform::Transform(const tf2::Vector3& v_in, tf2::Vector3& v_out) const
   {
     double easting, northing;
     utm_util_->ToUtm(v_in.y(), v_in.x(), easting, northing);
