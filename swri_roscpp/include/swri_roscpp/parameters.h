@@ -6,10 +6,12 @@
 #include <string>
 #include <vector>
 
+#include <rclcpp/rclcpp.hpp>
+
 #include <boost/bind.hpp>
 
-#include <ros/console.h>
-#include <ros/node_handle.h>
+//#include <ros/console.h>
+//#include <ros/node_handle.h>
 
 namespace swri
 {
@@ -19,144 +21,144 @@ namespace swri
   static std::set<std::string> _used_params;
 
   static inline
-  bool getParam(const ros::NodeHandle &nh,
+  bool getParam(const rclcpp::node::Node *nh,
       const std::string &name,
       int &variable)
   {
-    std::string resolved_name = nh.resolveName(name);
+    std::string resolved_name = name;//nh.resolveName(name);
     _used_params.insert(resolved_name);
-    if (!nh.getParam(name, variable))
+    if (!nh->get_parameter(name, variable))
     {
-      ROS_ERROR("Required int parameter %s does not exist", name.c_str());
+      printf("ERROR: Required int parameter %s does not exist", name.c_str());
       return false;
     }
-    ROS_INFO("Read parameter %s = %d", name.c_str(), variable);
+    printf("INFO: Read parameter %s = %d", name.c_str(), variable);
     return true;
   }
 
   static inline
-  bool getParam(const ros::NodeHandle &nh,
+  bool getParam(const rclcpp::node::Node *nh,
       const std::string &name,
       double &variable)
   {
-    std::string resolved_name = nh.resolveName(name);
+    std::string resolved_name = name;//nh.resolveName(name);
     _used_params.insert(resolved_name);
-    if (!nh.getParam(name, variable))
+    if (!nh->get_parameter(name, variable))
     {
-      ROS_ERROR("Required double parameter %s does not exist", name.c_str());
+      printf("ERROR: Required double parameter %s does not exist", name.c_str());
       return false;
     }
-    ROS_INFO("Read parameter %s = %lf", name.c_str(), variable);
+    printf("INFO: Read parameter %s = %lf", name.c_str(), variable);
     return true;
   }
 
   static inline
-  bool getParam(const ros::NodeHandle &nh,
+  bool getParam(const rclcpp::node::Node* nh,
       const std::string &name,
       float &variable)
   {
     double dbl_value;
-    if (!nh.getParam(name, dbl_value))
+    if (!nh->get_parameter(name, dbl_value))
     {
-      ROS_ERROR("Required double parameter %s does not exist", name.c_str());
+      printf("ERROR: Required double parameter %s does not exist", name.c_str());
       return false;
     }
     variable = dbl_value;
-    ROS_INFO("Read parameter %s = %f", name.c_str(), variable);
+    printf("INFO: Read parameter %s = %f", name.c_str(), variable);
     return true;
   }
 
   static inline
-  bool getParam(const ros::NodeHandle &nh,
+  bool getParam(const rclcpp::node::Node* nh,
       const std::string &name,
       std::string &variable)
   {
-    std::string resolved_name = nh.resolveName(name);
+    std::string resolved_name = name;//nh.resolveName(name);
     _used_params.insert(resolved_name);
-    if (!nh.getParam(name, variable))
+    if (!nh->get_parameter(name, variable))
     {
-      ROS_ERROR("Required string parameter %s does not exist", name.c_str());
+      printf("ERROR: Required string parameter %s does not exist", name.c_str());
       return false;
     }
-    ROS_INFO("Read parameter %s = %s", name.c_str(), variable.c_str());
+    printf("INFO: Read parameter %s = %s", name.c_str(), variable.c_str());
     return true;
   }
 
   static inline
-  bool getParam(const ros::NodeHandle &nh,
+  bool getParam(const rclcpp::node::Node* nh,
       const std::string &name,
       bool &variable)
   {
-    std::string resolved_name = nh.resolveName(name);
+    std::string resolved_name = name;//nh.resolveName(name);
     _used_params.insert(resolved_name);
-    if (!nh.getParam(name, variable))
+    if (!nh->get_parameter(name, variable))
     {
-      ROS_ERROR("Required bool parameter %s does not exist", name.c_str());
+      printf("ERROR: Required bool parameter %s does not exist", name.c_str());
       return false;
     }
-    ROS_INFO("Read parameter %s = %s", name.c_str(), variable ? "true" : "false");
+    printf("INFO: Read parameter %s = %s", name.c_str(), variable ? "true" : "false");
     return true;
   }
 
   static inline
-  void param(const ros::NodeHandle &nh,
+  void param(const rclcpp::node::Node *nh,
       const std::string &name,
       int &variable,
       const int default_value)
   {
-    std::string resolved_name = nh.resolveName(name);
+    std::string resolved_name = name;//nh.resolveName(name);
     _used_params.insert(resolved_name);
-    nh.param(name, variable, default_value);
-    ROS_INFO("Read parameter %s = %d", name.c_str(), variable);
+    nh->get_parameter_or(name, variable, default_value);
+    printf("INFO: Read parameter %s = %d", name.c_str(), variable);
   }
 
   static inline
-  void param(const ros::NodeHandle &nh,
+  void param(const rclcpp::node::Node *nh,
       const std::string &name,
       double &variable,
       const double default_value)
   {
-    std::string resolved_name = nh.resolveName(name);
+    std::string resolved_name = name;//nh.resolveName(name);
     _used_params.insert(resolved_name);
-    nh.param(name, variable, default_value);
-    ROS_INFO("Read parameter %s = %lf", name.c_str(), variable);
+    nh->get_parameter_or(name, variable, default_value);
+    printf("INFO: Read parameter %s = %lf", name.c_str(), variable);
   }
 
   static inline
-  void param(const ros::NodeHandle &nh,
+  void param(const rclcpp::node::Node *nh,
       const std::string &name,
       float &variable,
       const float default_value)
   {
     double dbl_value;
     double dbl_default = default_value;
-    nh.param(name, dbl_value, dbl_default);
+    nh->get_parameter_or(name, dbl_value, dbl_default);
     variable = dbl_value;
-    ROS_INFO("Read parameter %s = %f", name.c_str(), variable);
+    printf("INFO: Read parameter %s = %f", name.c_str(), variable);
   }
 
   static inline
-  void param(const ros::NodeHandle &nh,
+  void param(const rclcpp::node::Node *nh,
       const std::string &name,
       std::string &variable,
       const std::string default_value)
   {
-    std::string resolved_name = nh.resolveName(name);
+    std::string resolved_name = name;//nh.resolveName(name);
     _used_params.insert(resolved_name);
-    nh.param(name, variable, default_value);
-    ROS_INFO("Read parameter %s = \"%s\"", name.c_str(), variable.c_str());
+    nh->get_parameter_or(name, variable, default_value);
+    printf("INFO: Read parameter %s = \"%s\"", name.c_str(), variable.c_str());
   }
 
   static inline
-  void param(const ros::NodeHandle &nh,
+  void param(const rclcpp::node::Node *nh,
       const std::string &name,
       bool &variable,
       const bool default_value)
   {
-    std::string resolved_name = nh.resolveName(name);
+    std::string resolved_name = name;//nh.resolveName(name);
     _used_params.insert(resolved_name);
-    nh.param(name, variable, default_value);
-    ROS_INFO("Read parameter %s = %s", name.c_str(), variable ? "true" : "false");
+    nh->get_parameter_or(name, variable, default_value);
+    printf("INFO: Read parameter %s = %s", name.c_str(), variable ? "true" : "false");
   }
 
   /**
@@ -220,7 +222,7 @@ namespace swri
    * @return   A vector of fully-qualified parameter names in n's
    *           namespace that haven't been got.
    */
-  static inline
+  /*static inline
   std::vector<std::string> getUnusedParamKeys(ros::NodeHandle const& n)
   {
     // Get a list of every parameter on the parameter server
@@ -258,19 +260,19 @@ namespace swri
     return unused_params;
   }
 
-  /**
+  *
    * Wrapper around getUnusedParamKeys that emits a warning for every unused
    * parameter
    * @param n  Nodehandle defining the namespace to restrict the list
-   */
+   
   static inline
-  void warnUnusedParams(ros::NodeHandle const& n)
+  void warnUnusedParams(rclcpp::node::Node * const& n)
   {
     std::vector<std::string> unused_params = getUnusedParamKeys(n);
     for (std::vector<std::string>::const_iterator itr = unused_params.begin(); itr != unused_params.end(); ++itr)
     {
       ROS_WARN("Parameter %s was set, but not used by this node", itr->c_str());
     }
-  }
+  }*/
 }  // namespace swri_param
 #endif  // SWRI_ROSCPP_PARAMETERS_H_

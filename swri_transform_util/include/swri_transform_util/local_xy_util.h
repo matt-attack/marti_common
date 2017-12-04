@@ -124,7 +124,7 @@ namespace swri_transform_util
      * constructor is only used to create placeholder objects in containers
      * that require a zero-argument constructor.
      */
-    LocalXyWgs84Util(std::shared_ptr<rclcpp::node::Node> handle);
+    LocalXyWgs84Util(rclcpp::node::Node* handle);
 
     /**
      * Return whether the object has been initialized

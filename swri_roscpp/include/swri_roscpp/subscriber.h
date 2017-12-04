@@ -30,8 +30,8 @@
 #define SWRI_ROSCPP_SUBSCRIBER_H_
 
 
-#include <ros/node_handle.h>
-#include <diagnostic_updater/DiagnosticStatusWrapper.h>
+#include <rclcpp/rclcpp.hpp>
+//#include <diagnostic_updater/DiagnosticStatusWrapper.h>
 
 #include <swri_roscpp/parameters.h>
 #include <swri_roscpp/subscriber_impl.h>
@@ -66,27 +66,28 @@ class Subscriber
   // single address for the callback) and to allow us to hide the
   // template arguments so the message type doesn't have to be
   // specified when the subscriber is declared.
-  boost::shared_ptr<SubscriberImpl> impl_;
+  std::shared_ptr<SubscriberImpl> impl_;
 
  public:
   Subscriber();
 
   // Using class method callback.
   template<class M , class T >
-  Subscriber(ros::NodeHandle &nh,
+  Subscriber(rclcpp::node::Node *nh,
              const std::string &topic,
              uint32_t queue_size,
-             void(T::*fp)(const boost::shared_ptr< M const > &),
+             void(T::*fp)(const std::shared_ptr< M const > &),
              T *obj,
-             const ros::TransportHints &transport_hints=ros::TransportHints());
+             const rmw_qos_profile_t& transport_hints= rmw_qos_profile_default);
 
-  // Using a boost function callback.
+  // Using a std function callback.
   template<class M>
-  Subscriber(ros::NodeHandle &nh,
+  Subscriber(rclcpp::node::Node *nh,
              const std::string &topic,
              uint32_t queue_size,
-             const boost::function<void(const boost::shared_ptr<M const> &)> &callback,
-             const ros::TransportHints &transport_hints=ros::TransportHints());
+             const std::function<void(const std::shared_ptr<M const> &)> &callback,
+             const rmw_qos_profile_t& transport_hints= rmw_qos_profile_default);
+             //const ros::TransportHints &transport_hints=ros::TransportHints());
 
   // This is an alternate interface that stores a received message in
   // a variable without calling a user-defined callback function.
@@ -94,10 +95,10 @@ class Subscriber
   // for usage later and avoids having to write a trivial callback
   // function.
   template<class M>
-  Subscriber(ros::NodeHandle &nh,
+  Subscriber(rclcpp::node::Node *nh,
              const std::string &topic,
-             boost::shared_ptr< M const > *dest,
-             const ros::TransportHints &transport_hints=ros::TransportHints());
+             std::shared_ptr< M const > *dest,
+             const rmw_qos_profile_t& transport_hints= rmw_qos_profile_default);
   
   Subscriber& operator=(const Subscriber &other);
 
@@ -120,7 +121,7 @@ class Subscriber
   // Age of the most recent message (difference between now and the
   // header stamp (or time message was received for messages that
   // don't have headers).
-  ros::Duration age(const ros::Time &now=ros::TIME_MIN) const;
+  /*ros::Duration age(const ros::Time &now=ros::TIME_MIN) const;
   double ageSeconds(const ros::Time &now=ros::TIME_MIN) const;
   double ageMilliseconds(const ros::Time &now=ros::TIME_MIN) const;
 
@@ -170,7 +171,7 @@ class Subscriber
   // Determine if the topic is in a timed out state.
   bool inTimeout();
   // How many times the topic has been in a timeout state.
-  int timeoutCount();
+  int timeoutCount();*/
 
   // These flags determine which values are added to a diagnostic
   // status by the appendDiagnostics method.
@@ -196,9 +197,9 @@ class Subscriber
   // The flags parameter determines which values are added to the
   // status' key/value pairs.  This should be a bitwise combination of
   // the values defined in DIAGNOSTIC_FLAGS.
-  void appendDiagnostics(diagnostic_updater::DiagnosticStatusWrapper &status,
-                         const std::string &name,
-                         const int flags);
+  //void appendDiagnostics(diagnostic_updater::DiagnosticStatusWrapper &status,
+  //                       const std::string &name,
+  //                       const int flags);
 };  // class Subscriber
 
 inline
@@ -206,44 +207,44 @@ Subscriber::Subscriber()
 {
   // Setup an empty implementation so that we can assume impl_ is
   // non-null and avoid a lot of unnecessary NULL checks.
-  impl_ = boost::make_shared<SubscriberImpl>();
+  impl_ = std::make_shared<SubscriberImpl>();
 }
 
 template<class M , class T >
 inline
-Subscriber::Subscriber(ros::NodeHandle &nh,
+Subscriber::Subscriber(rclcpp::node::Node *nh,
                        const std::string &topic,
                        uint32_t queue_size,
-                       void(T::*fp)(const boost::shared_ptr< M const > &),
+                       void(T::*fp)(const std::shared_ptr< M const > &),
                        T *obj,
-                       const ros::TransportHints &transport_hints)
+                       const rmw_qos_profile_t& transport_hints)
 {
-  impl_ = boost::shared_ptr<SubscriberImpl>(
+  impl_ = std::shared_ptr<SubscriberImpl>(
     new TypedSubscriberImpl<M,T>(
       nh, topic, queue_size, fp, obj, transport_hints));
 }
 
 template<class M>
 inline
-Subscriber::Subscriber(ros::NodeHandle &nh,
+Subscriber::Subscriber(rclcpp::node::Node *nh,
                        const std::string &topic,
                        uint32_t queue_size,
-                       const boost::function<void(const boost::shared_ptr<M const> &)> &callback,
-                       const ros::TransportHints &transport_hints)
+                       const std::function<void(const std::shared_ptr<M const> &)> &callback,
+                       const rmw_qos_profile_t& transport_hints)
 {
-  impl_ = boost::shared_ptr<SubscriberImpl>(
+  impl_ = std::shared_ptr<SubscriberImpl>(
     new BindSubscriberImpl<M>(
       nh, topic, queue_size, callback, transport_hints));
 }
 
 template<class M>
 inline
-Subscriber::Subscriber(ros::NodeHandle &nh,
+Subscriber::Subscriber(rclcpp::node::Node *nh,
                        const std::string &topic,
-                       boost::shared_ptr< M const > *dest,
-                       const ros::TransportHints &transport_hints)
+                       std::shared_ptr< M const > *dest,
+                       const rmw_qos_profile_t& transport_hints)
 {
-  impl_ = boost::shared_ptr<SubscriberImpl>(
+  impl_ = std::shared_ptr<SubscriberImpl>(
     new StorageSubscriberImpl<M>(
       nh, topic, dest, transport_hints));
 }
@@ -263,13 +264,13 @@ Subscriber& Subscriber::operator=(const Subscriber &other)
   // around a lot, but I've never seen that kind of use case in any
   // ROS code.
 
-  ros::Duration new_timeout = other.impl_->timeout();
+  /*ros::Duration new_timeout = other.impl_->timeout();
   if (impl_->timeoutEnabled() && !other.impl_->timeoutEnabled()) {
     new_timeout = impl_->timeout();
-  }
+  }*/
 
   impl_ = other.impl_;
-  impl_->setTimeout(new_timeout);
+  //impl_->setTimeout(new_timeout);
 
   return *this;
 }
@@ -304,7 +305,7 @@ int Subscriber::messageCount() const
   return impl_->messageCount();
 }
 
-inline
+/*inline
 ros::Duration Subscriber::age(const ros::Time &now) const
 {
   if (now == ros::TIME_MIN) {
@@ -414,9 +415,9 @@ inline
 void Subscriber::setTimeout(const double time_out)
 {
   setTimeout(ros::Duration(time_out));
-}
+}*/
 
-inline
+/*inline
 void Subscriber::timeoutParam(
   const ros::NodeHandle &nh,
   const std::string &parameter_name,
@@ -467,9 +468,9 @@ inline
 int Subscriber::timeoutCount()
 {
   return impl_->timeoutCount();
-}
+}*/
 
-inline
+/*inline
 void Subscriber::appendDiagnostics(diagnostic_updater::DiagnosticStatusWrapper &status,
                                    const std::string &name,
                                    int flags)
@@ -543,6 +544,6 @@ void Subscriber::appendDiagnostics(diagnostic_updater::DiagnosticStatusWrapper &
         maxPeriodMilliseconds());
     }
   }
-}
+}*/
 }  // namespace swri
 #endif  // SWRI_ROSCPP_SUBSCRIBER_H_

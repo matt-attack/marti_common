@@ -91,7 +91,7 @@ namespace swri_transform_util
     Initialize();
   }
 
-  LocalXyWgs84Util::LocalXyWgs84Util(std::shared_ptr<rclcpp::node::Node> handle) :
+  LocalXyWgs84Util::LocalXyWgs84Util(rclcpp::node::Node* handle) :
     reference_latitude_(0),
     reference_longitude_(0),
     reference_angle_(0),

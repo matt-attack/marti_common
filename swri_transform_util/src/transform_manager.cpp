@@ -70,7 +70,7 @@ namespace swri_transform_util
   }
 
   void TransformManager::Initialize(
-      std::shared_ptr<rclcpp::node::Node> handle,
+      rclcpp::node::Node* handle,
       std::shared_ptr<tf2_ros::Buffer> tf)
   {
     handle_ = handle;

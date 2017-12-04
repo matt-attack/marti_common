@@ -73,7 +73,7 @@ namespace swri_transform_util
      * @param tf A shared pointer to a tf2::TransformListener that the
      *    Transformer wraps.
      */
-    void Initialize(std::shared_ptr<rclcpp::node::Node> handle, 
+    void Initialize(rclcpp::node::Node* handle, 
         std::shared_ptr<tf2_ros::Buffer> tf = std::shared_ptr<tf2_ros::Buffer>());
         //= boost::make_shared<tf2_ros::Buffer>());
 
@@ -178,7 +178,7 @@ namespace swri_transform_util
         geometry_msgs::msg::TransformStamped& transform) const;
 
   private:
-    std::shared_ptr<rclcpp::node::Node> handle_;
+    rclcpp::node::Node* handle_;
     std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
     std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 

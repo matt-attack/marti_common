@@ -61,7 +61,7 @@ namespace swri_transform_util
        *    node use the same tf::TransformListener to reduce redundant
        *    computation.
        */
-      void Initialize(std::shared_ptr<rclcpp::node::Node> handle_, const std::shared_ptr<tf2_ros::Buffer> tf);
+      void Initialize(rclcpp::node::Node* handle_, const std::shared_ptr<tf2_ros::Buffer> tf);
 
       /**
        * Get a map of the transforms supported by this Transformer
@@ -95,7 +95,7 @@ namespace swri_transform_util
     protected:
       bool initialized_;
       std::shared_ptr<tf2_ros::Buffer> tf_listener_;
-      std::shared_ptr<rclcpp::node::Node> handle_;
+      rclcpp::node::Node* handle_;
 
       virtual bool Initialize();
 
