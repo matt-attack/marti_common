@@ -44,7 +44,7 @@ class SubscriberImpl
 
   int message_count_;
 
-  //rclcpp::Time last_header_stamp_;
+  rclcpp::Time last_header_stamp_ = rclcpp::Time(0, 0, RCL_ROS_TIME);
   //rclcpp::Time last_receive_time_;
 
   /*ros::Duration total_latency_;
@@ -98,7 +98,7 @@ class SubscriberImpl
     in_timeout_ = false;
 
     //last_receive_time_ = now;
-    //last_header_stamp_ = stamp;
+    last_header_stamp_ = stamp;
   }
 
   void checkTimeout(const rclcpp::Time &now)
@@ -159,16 +159,16 @@ class SubscriberImpl
     return message_count_;
   }
 
-  /*ros::Duration age(const ros::Time &now) const
+  rclcpp::Time age(const rclcpp::Time &now) const
   {
     if (message_count_ < 1) {
-      return ros::DURATION_MAX;
+      return rclcpp::Time(1000000, 1000000, RCL_ROS_TIME);
     } else {
       return now - last_header_stamp_;
     }
   }
 
-  ros::Duration meanLatency() const
+  /*ros::Duration meanLatency() const
   {
     if (message_count_ < 1) {
       return ros::DURATION_MAX;
@@ -284,14 +284,14 @@ template<class M , class T>
 class TypedSubscriberImpl : public SubscriberImpl
 {
   T *obj_;
-  void (T::*callback_)(const std::shared_ptr< M const > &);
+  void (T::*callback_)(const std::shared_ptr< M  > );
 
  public:
   TypedSubscriberImpl(
     rclcpp::node::Node *nh,
     const std::string &topic,
     uint32_t queue_size,
-    void(T::*fp)(const std::shared_ptr< M const > &),
+    void(T::*fp)(const std::shared_ptr< M  > ),
     T *obj,
     const rmw_qos_profile_t& transport_hints)
   {
@@ -308,8 +308,8 @@ class TypedSubscriberImpl : public SubscriberImpl
 
     callback_ = fp;
     obj_ = obj;
-    transport_hints.depth = queue_size;
-    sub_ = nh->create_subscription(mapped_topic_,
+    //transport_hints.depth = queue_size;
+    sub_ = nh->create_subscription<M>(mapped_topic_,
                         std::bind(&TypedSubscriberImpl::handleMessage,
                         this, std::placeholders::_1),
                         transport_hints);
@@ -327,7 +327,7 @@ class TypedSubscriberImpl : public SubscriberImpl
   // Handler for messages without headers
   //template <class M2>
   //typename std::disable_if< ros::message_traits::HasHeader<M2>, void>::type
-  void handleMessage(const std::shared_ptr< M const> &msg)
+  void handleMessage(const std::shared_ptr< M > msg)
   {
     processHeader(rclcpp::Time::now());
     (obj_->*callback_)(msg);
@@ -337,7 +337,7 @@ class TypedSubscriberImpl : public SubscriberImpl
 template<class M>
 class BindSubscriberImpl : public SubscriberImpl
 {
-  std::function<void(const std::shared_ptr< M const> &)> callback_;
+  std::function<void(const std::shared_ptr< M > )> callback_;
   
 
  public:
@@ -345,7 +345,7 @@ class BindSubscriberImpl : public SubscriberImpl
     rclcpp::node::Node *nh,
     const std::string &topic,
     uint32_t queue_size,
-    const std::function<void(const std::shared_ptr< M const> &)> &callback,
+    const std::function<void(const std::shared_ptr< M > )> &callback,
     const rmw_qos_profile_t& transport_hints)
   {
     unmapped_topic_ = topic;
@@ -380,7 +380,7 @@ class BindSubscriberImpl : public SubscriberImpl
   // Handler for messages without headers
   //template <class M2>
   //typename std::disable_if< ros::message_traits::HasHeader<M2>, void>::type
-  void handleMessage(const std::shared_ptr< M const> &msg)
+  void handleMessage(const std::shared_ptr< M > msg)
   {
     processHeader(rclcpp::Time::now());
     callback_(msg);
@@ -390,13 +390,13 @@ class BindSubscriberImpl : public SubscriberImpl
 template<class M>
 class StorageSubscriberImpl : public SubscriberImpl
 {
-  std::shared_ptr< M const > *dest_;
+  std::shared_ptr< M > *dest_;
 
  public:
   StorageSubscriberImpl(
     rclcpp::node::Node *nh,
     const std::string &topic,
-    std::shared_ptr< M const > *dest,
+    std::shared_ptr< M > *dest,
     const rmw_qos_profile_t& transport_hints)
   {
     unmapped_topic_ = topic;
@@ -411,8 +411,8 @@ class StorageSubscriberImpl : public SubscriberImpl
     }
 
     dest_ = dest;
-    transport_hints.depth = 2;
-    sub_ = nh->create_subscription(mapped_topic_,
+    //transport_hints.depth = 2;
+    sub_ = nh->create_subscription<M>(mapped_topic_,
                         std::bind(&StorageSubscriberImpl::handleMessage,
                         this, std::placeholders::_1),
                         transport_hints);
@@ -430,7 +430,7 @@ class StorageSubscriberImpl : public SubscriberImpl
   // Handler for messages without headers
   //template <class M2>
   //typename std::disable_if< ros::message_traits::HasHeader<M2>, void>::type
-  void handleMessage(const std::shared_ptr< M const> &msg)
+  void handleMessage(const std::shared_ptr< M > msg)
   {
     processHeader(rclcpp::Time::now());
     *dest_ = msg;

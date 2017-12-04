@@ -76,7 +76,7 @@ class Subscriber
   Subscriber(rclcpp::node::Node *nh,
              const std::string &topic,
              uint32_t queue_size,
-             void(T::*fp)(const std::shared_ptr< M const > &),
+             void(T::*fp)(const std::shared_ptr< M > ),
              T *obj,
              const rmw_qos_profile_t& transport_hints= rmw_qos_profile_default);
 
@@ -85,7 +85,7 @@ class Subscriber
   Subscriber(rclcpp::node::Node *nh,
              const std::string &topic,
              uint32_t queue_size,
-             const std::function<void(const std::shared_ptr<M const> &)> &callback,
+             const std::function<void(const std::shared_ptr<M> )> &callback,
              const rmw_qos_profile_t& transport_hints= rmw_qos_profile_default);
              //const ros::TransportHints &transport_hints=ros::TransportHints());
 
@@ -97,7 +97,7 @@ class Subscriber
   template<class M>
   Subscriber(rclcpp::node::Node *nh,
              const std::string &topic,
-             std::shared_ptr< M const > *dest,
+             std::shared_ptr< M > *dest,
              const rmw_qos_profile_t& transport_hints= rmw_qos_profile_default);
   
   Subscriber& operator=(const Subscriber &other);
@@ -121,9 +121,9 @@ class Subscriber
   // Age of the most recent message (difference between now and the
   // header stamp (or time message was received for messages that
   // don't have headers).
-  /*ros::Duration age(const ros::Time &now=ros::TIME_MIN) const;
-  double ageSeconds(const ros::Time &now=ros::TIME_MIN) const;
-  double ageMilliseconds(const ros::Time &now=ros::TIME_MIN) const;
+  rclcpp::Time age(const rclcpp::Time &now=rclcpp::Time(0,0,RCL_ROS_TIME)) const;
+  double ageSeconds(const rclcpp::Time &now=rclcpp::Time(0,0,RCL_ROS_TIME)) const;
+  /*double ageMilliseconds(const ros::Time &now=ros::TIME_MIN) const;
 
   // Average latency (time difference between the time stamp and when
   // the message is received). These will be useless for message types
@@ -215,7 +215,7 @@ inline
 Subscriber::Subscriber(rclcpp::node::Node *nh,
                        const std::string &topic,
                        uint32_t queue_size,
-                       void(T::*fp)(const std::shared_ptr< M const > &),
+                       void(T::*fp)(const std::shared_ptr< M  > ),
                        T *obj,
                        const rmw_qos_profile_t& transport_hints)
 {
@@ -229,7 +229,7 @@ inline
 Subscriber::Subscriber(rclcpp::node::Node *nh,
                        const std::string &topic,
                        uint32_t queue_size,
-                       const std::function<void(const std::shared_ptr<M const> &)> &callback,
+                       const std::function<void(const std::shared_ptr<M > )> &callback,
                        const rmw_qos_profile_t& transport_hints)
 {
   impl_ = std::shared_ptr<SubscriberImpl>(
@@ -241,7 +241,7 @@ template<class M>
 inline
 Subscriber::Subscriber(rclcpp::node::Node *nh,
                        const std::string &topic,
-                       std::shared_ptr< M const > *dest,
+                       std::shared_ptr< M > *dest,
                        const rmw_qos_profile_t& transport_hints)
 {
   impl_ = std::shared_ptr<SubscriberImpl>(
@@ -305,23 +305,23 @@ int Subscriber::messageCount() const
   return impl_->messageCount();
 }
 
-/*inline
-ros::Duration Subscriber::age(const ros::Time &now) const
+inline
+rclcpp::Time Subscriber::age(const rclcpp::Time &now) const
 {
-  if (now == ros::TIME_MIN) {
-    return impl_->age(ros::Time::now());
+  if (now == rclcpp::Time(0, 0, RCL_ROS_TIME)) {
+    return impl_->age(rclcpp::Time::now(RCL_ROS_TIME));
   } else {
     return impl_->age(now);
   }
 }
 
 inline
-double Subscriber::ageSeconds(const ros::Time &now) const
+double Subscriber::ageSeconds(const rclcpp::Time &now) const
 {
-  return age(now).toSec();
+  return ((double)age(now).nanoseconds())/1000000000.0;
 }
 
-inline
+/*inline
 double Subscriber::ageMilliseconds(const ros::Time &now) const
 {
   return age(now).toNSec() / 1000000.0;
