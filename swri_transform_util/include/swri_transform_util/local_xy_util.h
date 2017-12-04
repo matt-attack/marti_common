@@ -32,7 +32,7 @@
 
 #include <string>
 
-#include <boost/shared_ptr.hpp>
+//#include <boost/shared_ptr.hpp>
 
 #include <rclcpp/rclcpp.hpp>
 #include <gps_common/msg/gps_fix.hpp>
@@ -222,7 +222,7 @@ namespace swri_transform_util
     void HandleOrigin(const gps_common::msg::GPSFix::SharedPtr origin);
 //const topic_tools::ShapeShifter::ConstPtr origin);
   };
-  typedef boost::shared_ptr<LocalXyWgs84Util> LocalXyWgs84UtilPtr;
+  typedef std::shared_ptr<LocalXyWgs84Util> LocalXyWgs84UtilPtr;
 }
 
 #endif  // TRANSFORM_UTIL_LOCAL_XY_UTIL_H_

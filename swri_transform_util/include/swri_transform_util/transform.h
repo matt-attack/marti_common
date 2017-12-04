@@ -30,7 +30,7 @@
 #ifndef TRANSFORM_UTIL_TRANSFORM_H_
 #define TRANSFORM_UTIL_TRANSFORM_H_
 
-#include <boost/shared_ptr.hpp>
+//#include <boost/shared_ptr.hpp>
 
 #include <rclcpp/time.hpp>
 #include <builtin_interfaces/msg/time.hpp>
@@ -94,12 +94,12 @@ namespace swri_transform_util
       return tf2::Quaternion(cross.x(), cross.y(), cross.z(), w).normalized();
     }
 
-    virtual boost::shared_ptr<TransformImpl> Inverse() const = 0;
+    virtual std::shared_ptr<TransformImpl> Inverse() const = 0;
     
     /// Time stamp for this transform
     builtin_interfaces::msg::Time stamp_;
   };
-  typedef boost::shared_ptr<TransformImpl> TransformImplPtr;
+  typedef std::shared_ptr<TransformImpl> TransformImplPtr;
 
   /**
    * An abstraction of the tf2::Transform class to support transforms in
@@ -136,7 +136,7 @@ namespace swri_transform_util
      *
      * @param[in]  transform  The input transform implementation.
      */
-    explicit Transform(boost::shared_ptr<TransformImpl> transform);
+    explicit Transform(std::shared_ptr<TransformImpl> transform);
 
     /**
      * Assignment operator for tf2::Transform.
@@ -154,7 +154,7 @@ namespace swri_transform_util
      *
      * @param[in]  transform  The input transform.
      */
-    Transform& operator=(boost::shared_ptr<TransformImpl> transform);
+    Transform& operator=(std::shared_ptr<TransformImpl> transform);
 
     /**
      * Apply the transform to a vector and return the result.
@@ -222,7 +222,7 @@ namespace swri_transform_util
 
   private:
     /// Pointer to the implementation of the transform
-    boost::shared_ptr<TransformImpl> transform_;
+    std::shared_ptr<TransformImpl> transform_;
   };
 
   /**

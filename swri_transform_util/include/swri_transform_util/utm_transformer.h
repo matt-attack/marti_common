@@ -34,7 +34,7 @@
 #include <string>
 #include <vector>
 
-#include <boost/shared_ptr.hpp>
+//#include <std/shared_ptr.hpp>
 
 #include <tf2/transform_datatypes.h>
 //#include <tf2/transform_listener.h>
@@ -86,8 +86,8 @@ namespace swri_transform_util
     protected:
       virtual bool Initialize();
 
-      boost::shared_ptr<UtmUtil> utm_util_;
-      boost::shared_ptr<LocalXyWgs84Util> local_xy_util_;
+      std::shared_ptr<UtmUtil> utm_util_;
+      std::shared_ptr<LocalXyWgs84Util> local_xy_util_;
 
       int32_t utm_zone_;
       char utm_band_;
@@ -106,8 +106,8 @@ namespace swri_transform_util
   public:
     UtmToTfTransform(
       const geometry_msgs::msg::TransformStamped& transform,
-      boost::shared_ptr<UtmUtil> utm_util,
-      boost::shared_ptr<LocalXyWgs84Util> local_xy_util,
+      std::shared_ptr<UtmUtil> utm_util,
+      std::shared_ptr<LocalXyWgs84Util> local_xy_util,
       int32_t utm_zone,
       char utm_band);
 
@@ -118,8 +118,8 @@ namespace swri_transform_util
 
   protected:
     geometry_msgs::msg::TransformStamped transform_;
-    boost::shared_ptr<UtmUtil> utm_util_;
-    boost::shared_ptr<LocalXyWgs84Util> local_xy_util_;
+    std::shared_ptr<UtmUtil> utm_util_;
+    std::shared_ptr<LocalXyWgs84Util> local_xy_util_;
     int32_t utm_zone_;
     char utm_band_;
   };
@@ -136,8 +136,8 @@ namespace swri_transform_util
   public:
     TfToUtmTransform(
       const geometry_msgs::msg::TransformStamped& transform,
-      boost::shared_ptr<UtmUtil> utm_util,
-      boost::shared_ptr<LocalXyWgs84Util> local_xy_util,
+      std::shared_ptr<UtmUtil> utm_util,
+      std::shared_ptr<LocalXyWgs84Util> local_xy_util,
       int32_t utm_zone,
       char utm_band);
 
@@ -148,8 +148,8 @@ namespace swri_transform_util
 
   protected:
     geometry_msgs::msg::TransformStamped transform_;
-    boost::shared_ptr<UtmUtil> utm_util_;
-    boost::shared_ptr<LocalXyWgs84Util> local_xy_util_;
+    std::shared_ptr<UtmUtil> utm_util_;
+    std::shared_ptr<LocalXyWgs84Util> local_xy_util_;
     int32_t utm_zone_;
     char    utm_band_;
   };
@@ -165,7 +165,7 @@ namespace swri_transform_util
   {
   public:
     UtmToWgs84Transform(
-        boost::shared_ptr<UtmUtil> utm_util,
+        std::shared_ptr<UtmUtil> utm_util,
         int32_t utm_zone,
         char utm_band);
 
@@ -173,7 +173,7 @@ namespace swri_transform_util
     virtual TransformImplPtr Inverse() const;
 
   protected:
-    boost::shared_ptr<UtmUtil> utm_util_;
+    std::shared_ptr<UtmUtil> utm_util_;
     int32_t utm_zone_;
     char    utm_band_;
   };
@@ -188,7 +188,7 @@ namespace swri_transform_util
   {
   public:
     explicit Wgs84ToUtmTransform(
-        boost::shared_ptr<UtmUtil> utm_util,
+        std::shared_ptr<UtmUtil> utm_util,
         int32_t utm_zone,
         char utm_band);
 
@@ -196,7 +196,7 @@ namespace swri_transform_util
     virtual TransformImplPtr Inverse() const;
 
   protected:
-    boost::shared_ptr<UtmUtil> utm_util_;
+    std::shared_ptr<UtmUtil> utm_util_;
     int32_t utm_zone_;
     char    utm_band_;
   };

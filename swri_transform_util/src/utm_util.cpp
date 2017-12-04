@@ -118,7 +118,7 @@ namespace swri_transform_util
       double& easting,
       double& northing) const
   {
-    boost::unique_lock<boost::mutex> lock(mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
 
     zone = GetZone(longitude);
     band = GetBand(latitude);
@@ -160,7 +160,7 @@ namespace swri_transform_util
       double& latitude,
       double& longitude) const
   {
-    boost::unique_lock<boost::mutex> lock(mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
 
     double x = easting;
     double y = northing;

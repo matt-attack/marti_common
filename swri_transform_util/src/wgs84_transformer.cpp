@@ -29,7 +29,7 @@
 
 #include <swri_transform_util/wgs84_transformer.h>
 
-#include <boost/make_shared.hpp>
+//#include <boost/make_shared.hpp>
 
 #include <swri_math_util/trig_util.h>
 #include <swri_transform_util/frames.h>
@@ -79,7 +79,7 @@ namespace swri_transform_util
         return false;
       }
 
-      transform = boost::make_shared<TfToWgs84Transform>(tf_transform, local_xy_util_);
+      transform = std::make_shared<TfToWgs84Transform>(tf_transform, local_xy_util_);
 
       return true;
     }
@@ -93,7 +93,7 @@ namespace swri_transform_util
         return false;
       }
 
-      transform = boost::make_shared<Wgs84ToTfTransform>(tf_transform, local_xy_util_);
+      transform = std::make_shared<Wgs84ToTfTransform>(tf_transform, local_xy_util_);
 
       return true;
     }
@@ -106,7 +106,7 @@ namespace swri_transform_util
   {
     if (!local_xy_util_)
     {
-      local_xy_util_ = boost::make_shared<LocalXyWgs84Util>(handle_);
+      local_xy_util_ = std::make_shared<LocalXyWgs84Util>(handle_);
     }
 
     if (local_xy_util_->Initialized())
@@ -134,7 +134,7 @@ namespace swri_transform_util
   
   TfToWgs84Transform::TfToWgs84Transform(
     const geometry_msgs::msg::TransformStamped& transform,
-    boost::shared_ptr<LocalXyWgs84Util> local_xy_util) :
+    std::shared_ptr<LocalXyWgs84Util> local_xy_util) :
     transform_(transform),
     local_xy_util_(local_xy_util)
   {
@@ -180,7 +180,7 @@ namespace swri_transform_util
     inverse_transform.transform = tf2::toMsg(tf.inverse());
     inverse_transform.header.frame_id = transform_.child_frame_id;
     inverse_transform.child_frame_id = transform_.header.frame_id;
-    TransformImplPtr inverse = boost::make_shared<Wgs84ToTfTransform>(
+    TransformImplPtr inverse = std::make_shared<Wgs84ToTfTransform>(
         inverse_transform,
         local_xy_util_);
     inverse->stamp_ = stamp_;
@@ -189,7 +189,7 @@ namespace swri_transform_util
   
   Wgs84ToTfTransform::Wgs84ToTfTransform(
     const geometry_msgs::msg::TransformStamped& transform,
-    boost::shared_ptr<LocalXyWgs84Util> local_xy_util) :
+    std::shared_ptr<LocalXyWgs84Util> local_xy_util) :
     transform_(transform),
     local_xy_util_(local_xy_util)
   {
@@ -228,7 +228,7 @@ namespace swri_transform_util
     inverse_transform.transform = tf2::toMsg(tf.inverse());
     inverse_transform.header.frame_id = transform_.child_frame_id;
     inverse_transform.child_frame_id = transform_.header.frame_id;
-    TransformImplPtr inverse = boost::make_shared<TfToWgs84Transform>(
+    TransformImplPtr inverse = std::make_shared<TfToWgs84Transform>(
         inverse_transform,
         local_xy_util_);
     inverse->stamp_ = stamp_;

@@ -33,8 +33,8 @@
 #include <map>
 #include <string>
 
-#include <boost/make_shared.hpp>
-#include <boost/shared_ptr.hpp>
+//#include <boost/make_shared.hpp>
+//#include <boost/shared_ptr.hpp>
 
 #include <tf2/transform_datatypes.h>
 #include <tf2_ros/transform_listener.h>
@@ -45,7 +45,7 @@
 
 namespace swri_transform_util
 {
-  typedef std::map<std::string, boost::shared_ptr<Transformer> > TransformerMap;
+  typedef std::map<std::string, std::shared_ptr<Transformer> > TransformerMap;
   typedef std::map<std::string, TransformerMap> SourceTargetMap;
 
   /**
@@ -74,7 +74,7 @@ namespace swri_transform_util
      *    Transformer wraps.
      */
     void Initialize(std::shared_ptr<rclcpp::node::Node> handle, 
-        boost::shared_ptr<tf2_ros::Buffer> tf = boost::shared_ptr<tf2_ros::Buffer>());
+        std::shared_ptr<tf2_ros::Buffer> tf = std::shared_ptr<tf2_ros::Buffer>());
         //= boost::make_shared<tf2_ros::Buffer>());
 
     /**
@@ -179,10 +179,10 @@ namespace swri_transform_util
 
   private:
     std::shared_ptr<rclcpp::node::Node> handle_;
-    boost::shared_ptr<tf2_ros::Buffer> tf_buffer_;
-    boost::shared_ptr<tf2_ros::TransformListener> tf_listener_;
+    std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+    std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 
-    boost::shared_ptr<LocalXyWgs84Util> local_xy_util_;
+    std::shared_ptr<LocalXyWgs84Util> local_xy_util_;
 
     SourceTargetMap transformers_;
   };

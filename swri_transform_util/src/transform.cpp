@@ -29,38 +29,38 @@
 
 #include <swri_transform_util/transform.h>
 
-#include <boost/make_shared.hpp>
+//#include <boost/make_shared.hpp>
 
 namespace swri_transform_util
 {
   Transform::Transform() :
-    transform_(boost::make_shared<IdentityTransform>())
+    transform_(std::make_shared<IdentityTransform>())
   {
   }
 
   Transform::Transform(const tf2::Transform& transform) :
-    transform_(boost::make_shared<TfTransform>(transform))
+    transform_(std::make_shared<TfTransform>(transform))
   {
   }
   
   Transform::Transform(const geometry_msgs::msg::TransformStamped& transform) :
-    transform_(boost::make_shared<TfTransform>(transform))
+    transform_(std::make_shared<TfTransform>(transform))
   {
   }
 
-  Transform::Transform(boost::shared_ptr<TransformImpl> transform) :
+  Transform::Transform(std::shared_ptr<TransformImpl> transform) :
     transform_(transform)
   {
   }
 
   Transform& Transform::operator=(const tf2::Transform transform)
   {
-    transform_ = boost::make_shared<TfTransform>(transform);
+    transform_ = std::make_shared<TfTransform>(transform);
 
     return *this;
   }
 
-  Transform& Transform::operator=(boost::shared_ptr<TransformImpl> transform)
+  Transform& Transform::operator=(std::shared_ptr<TransformImpl> transform)
   {
     transform_ = transform;
 
@@ -121,10 +121,10 @@ namespace swri_transform_util
     v_out = v_in;
   }
   
-  boost::shared_ptr<TransformImpl> IdentityTransform::Inverse() const
+  std::shared_ptr<TransformImpl> IdentityTransform::Inverse() const
   {
     TransformImplPtr inverse = 
-        boost::make_shared<IdentityTransform>();
+        std::make_shared<IdentityTransform>();
     inverse->stamp_ = stamp_;
     return inverse;
   }
@@ -138,7 +138,7 @@ namespace swri_transform_util
   TfTransform::TfTransform(const geometry_msgs::msg::TransformStamped& transform) //:
    // transform_(transform)
   {
-    tf2::fromMsg(transform, transform_);
+    tf2::fromMsg(transform.transform, transform_);
     stamp_ = transform.header.stamp;
   }
 
@@ -155,7 +155,7 @@ namespace swri_transform_util
   TransformImplPtr TfTransform::Inverse() const
   {
     TransformImplPtr inverse = 
-        boost::make_shared<TfTransform>(transform_.inverse());
+        std::make_shared<TfTransform>(transform_.inverse());
     inverse->stamp_ = stamp_;
     return inverse;
   }

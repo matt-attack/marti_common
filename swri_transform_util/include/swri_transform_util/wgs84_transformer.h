@@ -34,7 +34,7 @@
 #include <string>
 #include <vector>
 
-#include <boost/shared_ptr.hpp>
+//#include <boost/shared_ptr.hpp>
 
 #include <rclcpp/time.hpp>
 
@@ -86,7 +86,7 @@ namespace swri_transform_util
     protected:
       virtual bool Initialize();
 
-      boost::shared_ptr<LocalXyWgs84Util> local_xy_util_;
+      std::shared_ptr<LocalXyWgs84Util> local_xy_util_;
       std::string local_xy_frame_;
   };
 
@@ -110,7 +110,7 @@ namespace swri_transform_util
      */
     TfToWgs84Transform(
       const geometry_msgs::msg::TransformStamped& transform,
-      boost::shared_ptr<LocalXyWgs84Util> local_xy_util);
+      std::shared_ptr<LocalXyWgs84Util> local_xy_util);
 
     /**
      * Transform a 3D vector to latitude/longitude
@@ -140,7 +140,7 @@ namespace swri_transform_util
 
   protected:
     geometry_msgs::msg::TransformStamped transform_;
-    boost::shared_ptr<LocalXyWgs84Util> local_xy_util_;
+    std::shared_ptr<LocalXyWgs84Util> local_xy_util_;
   };
 
   /**
@@ -163,7 +163,7 @@ namespace swri_transform_util
        */
     Wgs84ToTfTransform(
       const geometry_msgs::msg::TransformStamped& transform,
-      boost::shared_ptr<LocalXyWgs84Util> local_xy_util);
+      std::shared_ptr<LocalXyWgs84Util> local_xy_util);
 
     /**
      * Transform a WGS84 triple to a 3D vector
@@ -192,7 +192,7 @@ namespace swri_transform_util
     virtual TransformImplPtr Inverse() const;
   protected:
     geometry_msgs::msg::TransformStamped transform_;
-    boost::shared_ptr<LocalXyWgs84Util> local_xy_util_;
+    std::shared_ptr<LocalXyWgs84Util> local_xy_util_;
   };
 }
 

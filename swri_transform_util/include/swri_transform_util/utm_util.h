@@ -33,7 +33,8 @@
 #include <stdint.h>
 
 #include <boost/serialization/singleton.hpp>
-#include <boost/thread/mutex.hpp>
+//#include <boost/thread/mutex.hpp>
+#include <mutex>
 
 #include <proj_api.h>
 
@@ -166,7 +167,7 @@ namespace swri_transform_util
         projPJ utm_north_[60];
         projPJ utm_south_[60];
 
-        mutable boost::mutex mutex_;
+        mutable std::mutex mutex_;
     };
     typedef boost::serialization::singleton<UtmData> UtmDataSingleton;
 

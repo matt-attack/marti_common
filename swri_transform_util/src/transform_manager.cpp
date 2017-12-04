@@ -39,13 +39,13 @@ namespace swri_transform_util
 {
   TransformManager::TransformManager()
   {
-    std::vector<boost::shared_ptr<Transformer> > transformers;
-    transformers.push_back(boost::make_shared<Wgs84Transformer>());
-    transformers.push_back(boost::make_shared<UtmTransformer>());
+    std::vector<std::shared_ptr<Transformer> > transformers;
+    transformers.push_back(std::make_shared<Wgs84Transformer>());
+    transformers.push_back(std::make_shared<UtmTransformer>());
 
     for (size_t i = 0; i < transformers.size(); i++)
     {
-      boost::shared_ptr<Transformer> transformer = transformers[i];
+      std::shared_ptr<Transformer> transformer = transformers[i];
       std::map<std::string, std::vector<std::string> > supports = transformer->Supports();
 
       std::map<std::string, std::vector<std::string> >::iterator iter;
@@ -71,24 +71,24 @@ namespace swri_transform_util
 
   void TransformManager::Initialize(
       std::shared_ptr<rclcpp::node::Node> handle,
-      boost::shared_ptr<tf2_ros::Buffer> tf)
+      std::shared_ptr<tf2_ros::Buffer> tf)
   {
     handle_ = handle;
     if (!tf)
     {
-      tf_buffer_ = boost::make_shared<tf2_ros::Buffer>();
-      tf_listener_ = boost::make_shared<tf2_ros::TransformListener>(*tf_buffer_, handle);
+      tf_buffer_ = std::make_shared<tf2_ros::Buffer>();
+      tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, handle);
     }
     else
     {
       tf_buffer_ = tf;
     }
-    local_xy_util_ = boost::make_shared<LocalXyWgs84Util>(handle);
+    local_xy_util_ = std::make_shared<LocalXyWgs84Util>(handle);
 
-    std::map<std::string, std::map<std::string, boost::shared_ptr<Transformer> > >::iterator iter1;
+    std::map<std::string, std::map<std::string, std::shared_ptr<Transformer> > >::iterator iter1;
     for (iter1 = transformers_.begin(); iter1 != transformers_.end(); ++iter1)
     {
-      std::map<std::string, boost::shared_ptr<Transformer> >::iterator iter2;
+      std::map<std::string, std::shared_ptr<Transformer> >::iterator iter2;
       for (iter2 = iter1->second.begin(); iter2 != iter1->second.end(); ++iter2)
       {
         iter2->second->Initialize(handle, tf);
@@ -221,7 +221,7 @@ namespace swri_transform_util
       return false;
     }
 
-    boost::shared_ptr<Transformer> transformer = target_iter->second;
+    std::shared_ptr<Transformer> transformer = target_iter->second;
 
     if (!transformer)
     {

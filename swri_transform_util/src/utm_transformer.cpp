@@ -29,15 +29,13 @@
 
 #include <swri_transform_util/utm_transformer.h>
 
-#include <boost/make_shared.hpp>
-
 #include <swri_math_util/trig_util.h>
 #include <swri_transform_util/frames.h>
 
 namespace swri_transform_util
 {
   UtmTransformer::UtmTransformer() :
-    utm_util_(boost::make_shared<UtmUtil>()),
+    utm_util_(std::make_shared<UtmUtil>()),
     utm_zone_(0),
     utm_band_(0)
   {
@@ -74,7 +72,7 @@ namespace swri_transform_util
     {
       if (source_frame == _wgs84_frame)
       {
-        transform = boost::make_shared<Wgs84ToUtmTransform>(
+        transform = std::make_shared<Wgs84ToUtmTransform>(
             utm_util_,
             utm_zone_,
             utm_band_);
@@ -91,7 +89,7 @@ namespace swri_transform_util
           return false;
         }
 
-        transform = boost::make_shared<TfToUtmTransform>(
+        transform = std::make_shared<TfToUtmTransform>(
             tf_transform,
             utm_util_,
             local_xy_util_,
@@ -102,7 +100,7 @@ namespace swri_transform_util
     }
     else if (target_frame == _wgs84_frame && source_frame == _utm_frame)
     {
-      transform = boost::make_shared<UtmToWgs84Transform>(
+      transform = std::make_shared<UtmToWgs84Transform>(
           utm_util_,
           utm_zone_,
           utm_band_);
@@ -118,7 +116,7 @@ namespace swri_transform_util
         return false;
       }
 
-      transform = boost::make_shared<UtmToTfTransform>(
+      transform = std::make_shared<UtmToTfTransform>(
           tf_transform,
           utm_util_,
           local_xy_util_,
@@ -136,7 +134,7 @@ namespace swri_transform_util
   {
     if (!local_xy_util_)
     {
-      local_xy_util_ = boost::make_shared<LocalXyWgs84Util>(handle_);
+      local_xy_util_ = std::make_shared<LocalXyWgs84Util>(handle_);
     }
 
     if (local_xy_util_->Initialized())
@@ -170,8 +168,8 @@ namespace swri_transform_util
 
   UtmToTfTransform::UtmToTfTransform(
       const geometry_msgs::msg::TransformStamped& transform,
-      boost::shared_ptr<UtmUtil> utm_util,
-      boost::shared_ptr<LocalXyWgs84Util> local_xy_util,
+      std::shared_ptr<UtmUtil> utm_util,
+      std::shared_ptr<LocalXyWgs84Util> local_xy_util,
       int32_t utm_zone,
       char utm_band) :
       transform_(transform),
@@ -219,7 +217,7 @@ namespace swri_transform_util
     inverse_transform.transform = tf2::toMsg(tf.inverse());
     inverse_transform.header.frame_id = transform_.child_frame_id;
     inverse_transform.child_frame_id = transform_.header.frame_id;
-    TransformImplPtr inverse = boost::make_shared<TfToUtmTransform>(
+    TransformImplPtr inverse = std::make_shared<TfToUtmTransform>(
         inverse_transform,
         utm_util_,
         local_xy_util_,
@@ -231,8 +229,8 @@ namespace swri_transform_util
 
   TfToUtmTransform::TfToUtmTransform(
       const geometry_msgs::msg::TransformStamped& transform,
-      boost::shared_ptr<UtmUtil> utm_util,
-      boost::shared_ptr<LocalXyWgs84Util> local_xy_util,
+      std::shared_ptr<UtmUtil> utm_util,
+      std::shared_ptr<LocalXyWgs84Util> local_xy_util,
       int32_t utm_zone,
       char utm_band) :
       transform_(transform),
@@ -280,7 +278,7 @@ namespace swri_transform_util
     inverse_transform.transform = tf2::toMsg(tf.inverse());
     inverse_transform.header.frame_id = transform_.child_frame_id;
     inverse_transform.child_frame_id = transform_.header.frame_id;
-    TransformImplPtr inverse = boost::make_shared<UtmToTfTransform>(
+    TransformImplPtr inverse = std::make_shared<UtmToTfTransform>(
         inverse_transform,
         utm_util_,
         local_xy_util_,
@@ -291,7 +289,7 @@ namespace swri_transform_util
   }
 
   UtmToWgs84Transform::UtmToWgs84Transform(
-    boost::shared_ptr<UtmUtil> utm_util,
+    std::shared_ptr<UtmUtil> utm_util,
     int32_t utm_zone,
     char utm_band) :
     utm_util_(utm_util),
@@ -310,7 +308,7 @@ namespace swri_transform_util
 
   TransformImplPtr UtmToWgs84Transform::Inverse() const
   {
-    TransformImplPtr inverse = boost::make_shared<Wgs84ToUtmTransform>(
+    TransformImplPtr inverse = std::make_shared<Wgs84ToUtmTransform>(
         utm_util_,
         utm_zone_,
         utm_band_);
@@ -320,7 +318,7 @@ namespace swri_transform_util
 
 
   Wgs84ToUtmTransform::Wgs84ToUtmTransform(
-    boost::shared_ptr<UtmUtil> utm_util,
+    std::shared_ptr<UtmUtil> utm_util,
     int32_t utm_zone,
     char utm_band) :
     utm_util_(utm_util),
@@ -339,7 +337,7 @@ namespace swri_transform_util
 
   TransformImplPtr Wgs84ToUtmTransform::Inverse() const
   {
-    TransformImplPtr inverse = boost::make_shared<UtmToWgs84Transform>(
+    TransformImplPtr inverse = std::make_shared<UtmToWgs84Transform>(
         utm_util_,
         utm_zone_,
         utm_band_);
