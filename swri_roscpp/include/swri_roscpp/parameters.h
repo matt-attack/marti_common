@@ -32,7 +32,7 @@ namespace swri
       printf("ERROR: Required int parameter %s does not exist", name.c_str());
       return false;
     }
-    printf("INFO: Read parameter %s = %d", name.c_str(), variable);
+    printf("INFO: Read parameter %s = %d\n", name.c_str(), variable);
     return true;
   }
 
@@ -48,7 +48,7 @@ namespace swri
       printf("ERROR: Required double parameter %s does not exist", name.c_str());
       return false;
     }
-    printf("INFO: Read parameter %s = %lf", name.c_str(), variable);
+    printf("INFO: Read parameter %s = %lf\n", name.c_str(), variable);
     return true;
   }
 
@@ -64,7 +64,7 @@ namespace swri
       return false;
     }
     variable = dbl_value;
-    printf("INFO: Read parameter %s = %f", name.c_str(), variable);
+    printf("INFO: Read parameter %s = %f\n", name.c_str(), variable);
     return true;
   }
 
@@ -80,7 +80,7 @@ namespace swri
       printf("ERROR: Required string parameter %s does not exist", name.c_str());
       return false;
     }
-    printf("INFO: Read parameter %s = %s", name.c_str(), variable.c_str());
+    printf("INFO: Read parameter %s = %s\n", name.c_str(), variable.c_str());
     return true;
   }
 
@@ -96,7 +96,7 @@ namespace swri
       printf("ERROR: Required bool parameter %s does not exist", name.c_str());
       return false;
     }
-    printf("INFO: Read parameter %s = %s", name.c_str(), variable ? "true" : "false");
+    printf("INFO: Read parameter %s = %s\n", name.c_str(), variable ? "true" : "false");
     return true;
   }
 
@@ -109,7 +109,7 @@ namespace swri
     std::string resolved_name = name;//nh.resolveName(name);
     _used_params.insert(resolved_name);
     nh->get_parameter_or(name, variable, default_value);
-    printf("INFO: Read parameter %s = %d", name.c_str(), variable);
+    printf("INFO: Read parameter %s = %d\n", name.c_str(), variable);
   }
 
   static inline
@@ -121,7 +121,7 @@ namespace swri
     std::string resolved_name = name;//nh.resolveName(name);
     _used_params.insert(resolved_name);
     nh->get_parameter_or(name, variable, default_value);
-    printf("INFO: Read parameter %s = %lf", name.c_str(), variable);
+    printf("INFO: Read parameter %s = %lf\n", name.c_str(), variable);
   }
 
   static inline
@@ -146,7 +146,7 @@ namespace swri
     std::string resolved_name = name;//nh.resolveName(name);
     _used_params.insert(resolved_name);
     nh->get_parameter_or(name, variable, default_value);
-    printf("INFO: Read parameter %s = \"%s\"", name.c_str(), variable.c_str());
+    printf("INFO: Read parameter %s = \"%s\"\n", name.c_str(), variable.c_str());
   }
 
   static inline
@@ -158,7 +158,7 @@ namespace swri
     std::string resolved_name = name;//nh.resolveName(name);
     _used_params.insert(resolved_name);
     nh->get_parameter_or(name, variable, default_value);
-    printf("INFO: Read parameter %s = %s", name.c_str(), variable ? "true" : "false");
+    printf("INFO: Read parameter %s = %s\n", name.c_str(), variable ? "true" : "false");
   }
 
   /**

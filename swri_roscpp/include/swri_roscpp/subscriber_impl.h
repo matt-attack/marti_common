@@ -299,9 +299,9 @@ class TypedSubscriberImpl : public SubscriberImpl
     mapped_topic_ = topic;//nh.resolveName(topic);
 
     if (unmapped_topic_ == mapped_topic_) {
-      printf("INFO: Subscribing to '%s'.", mapped_topic_.c_str());
+      printf("INFO: Subscribing to '%s'.\n", mapped_topic_.c_str());
     } else {
-      printf("INFO: Subscribing to '%s' at '%s'.",
+      printf("INFO: Subscribing to '%s' at '%s'.\n",
                unmapped_topic_.c_str(),
                mapped_topic_.c_str());
     }
@@ -352,9 +352,9 @@ class BindSubscriberImpl : public SubscriberImpl
     mapped_topic_ = topic;//nh.resolveName(topic);
 
     if (unmapped_topic_ == mapped_topic_) {
-      printf("INFO: Subscribing to '%s'.", mapped_topic_.c_str());
+      printf("INFO: Subscribing to '%s'.\n", mapped_topic_.c_str());
     } else {
-      printf("INFO: Subscribing to '%s' at '%s'.",
+      printf("INFO: Subscribing to '%s' at '%s'.\n",
                unmapped_topic_.c_str(),
                mapped_topic_.c_str());
     }
@@ -403,9 +403,9 @@ class StorageSubscriberImpl : public SubscriberImpl
     mapped_topic_ = topic;//nh.resolveName(topic);
 
     if (unmapped_topic_ == mapped_topic_) {
-      printf("INFO: Subscribing to '%s'.", mapped_topic_.c_str());
+      printf("INFO: Subscribing to '%s'.\n", mapped_topic_.c_str());
     } else {
-      printf("INFO: Subscribing to '%s' at '%s'.",
+      printf("INFO: Subscribing to '%s' at '%s'.\n",
                unmapped_topic_.c_str(),
                mapped_topic_.c_str());
     }
