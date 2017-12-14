@@ -37,6 +37,9 @@ namespace swri
 class Subscriber;
 class SubscriberImpl
 {
+ public:
+  std::shared_ptr<rclcpp::Node> nh_;
+ 
  protected:
   rclcpp::SubscriptionBase::SharedPtr sub_;
   std::string unmapped_topic_;
@@ -62,7 +65,7 @@ class SubscriberImpl
 
   void processHeader(const rclcpp::Time &stamp)
   {
-    rclcpp::Time now = rclcpp::Time::now();
+    rclcpp::Time now = nh_->now();
 
     // Check for timeouts so that we can correctly increment the
     // timeout count.
@@ -159,10 +162,10 @@ class SubscriberImpl
     return message_count_;
   }
 
-  rclcpp::Time age(const rclcpp::Time &now) const
+  rclcpp::Duration age(const rclcpp::Time &now) const
   {
     if (message_count_ < 1) {
-      return rclcpp::Time(1000000, 1000000, RCL_ROS_TIME);
+      return rclcpp::Duration(1000000, 1000000);
     } else {
       return now - last_header_stamp_;
     }
@@ -288,7 +291,7 @@ class TypedSubscriberImpl : public SubscriberImpl
 
  public:
   TypedSubscriberImpl(
-    rclcpp::node::Node *nh,
+    std::shared_ptr<rclcpp::Node> nh,
     const std::string &topic,
     uint32_t queue_size,
     void(T::*fp)(const std::shared_ptr< M  > ),
@@ -297,6 +300,7 @@ class TypedSubscriberImpl : public SubscriberImpl
   {
     unmapped_topic_ = topic;
     mapped_topic_ = topic;//nh.resolveName(topic);
+    nh_ = nh;
 
     if (unmapped_topic_ == mapped_topic_) {
       printf("INFO: Subscribing to '%s'.\n", mapped_topic_.c_str());
@@ -329,7 +333,7 @@ class TypedSubscriberImpl : public SubscriberImpl
   //typename std::disable_if< ros::message_traits::HasHeader<M2>, void>::type
   void handleMessage(const std::shared_ptr< M > msg)
   {
-    processHeader(rclcpp::Time::now());
+    processHeader(nh_->now());
     (obj_->*callback_)(msg);
   }
 };  // class TypedSubscriberImpl
@@ -342,7 +346,7 @@ class BindSubscriberImpl : public SubscriberImpl
 
  public:
   BindSubscriberImpl(
-    rclcpp::node::Node *nh,
+    std::shared_ptr<rclcpp::Node> nh,
     const std::string &topic,
     uint32_t queue_size,
     const std::function<void(const std::shared_ptr< M > )> &callback,
@@ -350,6 +354,7 @@ class BindSubscriberImpl : public SubscriberImpl
   {
     unmapped_topic_ = topic;
     mapped_topic_ = topic;//nh.resolveName(topic);
+    nh_ = nh;
 
     if (unmapped_topic_ == mapped_topic_) {
       printf("INFO: Subscribing to '%s'.\n", mapped_topic_.c_str());
@@ -382,7 +387,7 @@ class BindSubscriberImpl : public SubscriberImpl
   //typename std::disable_if< ros::message_traits::HasHeader<M2>, void>::type
   void handleMessage(const std::shared_ptr< M > msg)
   {
-    processHeader(rclcpp::Time::now());
+    processHeader(nh_->now());
     callback_(msg);
   }
 };  // class BindSubscriberImpl
@@ -394,13 +399,14 @@ class StorageSubscriberImpl : public SubscriberImpl
 
  public:
   StorageSubscriberImpl(
-    rclcpp::node::Node *nh,
+    std::shared_ptr<rclcpp::Node> nh,
     const std::string &topic,
     std::shared_ptr< M > *dest,
     const rmw_qos_profile_t& transport_hints)
   {
     unmapped_topic_ = topic;
     mapped_topic_ = topic;//nh.resolveName(topic);
+    nh_ = nh;
 
     if (unmapped_topic_ == mapped_topic_) {
       printf("INFO: Subscribing to '%s'.\n", mapped_topic_.c_str());
@@ -432,7 +438,7 @@ class StorageSubscriberImpl : public SubscriberImpl
   //typename std::disable_if< ros::message_traits::HasHeader<M2>, void>::type
   void handleMessage(const std::shared_ptr< M > msg)
   {
-    processHeader(rclcpp::Time::now());
+    processHeader(nh_->now());
     *dest_ = msg;
   }
 };  // class StorageSubscriberImpl

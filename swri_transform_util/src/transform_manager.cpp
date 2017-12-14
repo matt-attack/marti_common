@@ -70,14 +70,14 @@ namespace swri_transform_util
   }
 
   void TransformManager::Initialize(
-      rclcpp::node::Node* handle,
+      std::shared_ptr<rclcpp::Node> handle,
       std::shared_ptr<tf2_ros::Buffer> tf)
   {
     handle_ = handle;
     if (!tf)
     {
       tf_buffer_ = std::make_shared<tf2_ros::Buffer>();
-      tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, handle);
+      tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, handle, true);
     }
     else
     {
@@ -106,7 +106,7 @@ namespace swri_transform_util
     std::string tgt_frame = target_frame;
     if (tgt_frame == src_frame)
     {
-      transform = Transform();
+      transform = Transform(handle_->now());
       return true;
     }
 

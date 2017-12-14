@@ -35,6 +35,7 @@
 //#include <boost/shared_ptr.hpp>
 
 #include <rclcpp/rclcpp.hpp>
+#include <rclcpp/node.hpp>
 #include <gps_common/msg/gps_fix.hpp>
 //#include <topic_tools/shape_shifter.h>
 
@@ -124,7 +125,7 @@ namespace swri_transform_util
      * constructor is only used to create placeholder objects in containers
      * that require a zero-argument constructor.
      */
-    LocalXyWgs84Util(rclcpp::node::Node* handle);
+    LocalXyWgs84Util(std::shared_ptr<rclcpp::Node> handle);
 
     /**
      * Return whether the object has been initialized
@@ -214,7 +215,7 @@ namespace swri_transform_util
 
     std::string frame_;
 
-    std::shared_ptr<rclcpp::subscription::Subscription<gps_common::msg::GPSFix, std::allocator<void> > > origin_sub_;
+    std::shared_ptr<rclcpp::Subscription<gps_common::msg::GPSFix, std::allocator<void> > > origin_sub_;
     bool initialized_;
 
     void Initialize();

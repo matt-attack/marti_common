@@ -73,7 +73,7 @@ class Subscriber
 
   // Using class method callback.
   template<class M , class T >
-  Subscriber(rclcpp::node::Node *nh,
+  Subscriber(std::shared_ptr<rclcpp::Node> nh,
              const std::string &topic,
              uint32_t queue_size,
              void(T::*fp)(const std::shared_ptr< M > ),
@@ -82,7 +82,7 @@ class Subscriber
 
   // Using a std function callback.
   template<class M>
-  Subscriber(rclcpp::node::Node *nh,
+  Subscriber(std::shared_ptr<rclcpp::Node> nh,
              const std::string &topic,
              uint32_t queue_size,
              const std::function<void(const std::shared_ptr<M> )> &callback,
@@ -95,7 +95,7 @@ class Subscriber
   // for usage later and avoids having to write a trivial callback
   // function.
   template<class M>
-  Subscriber(rclcpp::node::Node *nh,
+  Subscriber(std::shared_ptr<rclcpp::Node> nh,
              const std::string &topic,
              std::shared_ptr< M > *dest,
              const rmw_qos_profile_t& transport_hints= rmw_qos_profile_default);
@@ -121,7 +121,7 @@ class Subscriber
   // Age of the most recent message (difference between now and the
   // header stamp (or time message was received for messages that
   // don't have headers).
-  rclcpp::Time age(const rclcpp::Time &now=rclcpp::Time(0,0,RCL_ROS_TIME)) const;
+  rclcpp::Duration age(const rclcpp::Time &now=rclcpp::Time(0,0,RCL_ROS_TIME)) const;
   double ageSeconds(const rclcpp::Time &now=rclcpp::Time(0,0,RCL_ROS_TIME)) const;
   /*double ageMilliseconds(const ros::Time &now=ros::TIME_MIN) const;
 
@@ -212,7 +212,7 @@ Subscriber::Subscriber()
 
 template<class M , class T >
 inline
-Subscriber::Subscriber(rclcpp::node::Node *nh,
+Subscriber::Subscriber(std::shared_ptr<rclcpp::Node> nh,
                        const std::string &topic,
                        uint32_t queue_size,
                        void(T::*fp)(const std::shared_ptr< M  > ),
@@ -226,7 +226,7 @@ Subscriber::Subscriber(rclcpp::node::Node *nh,
 
 template<class M>
 inline
-Subscriber::Subscriber(rclcpp::node::Node *nh,
+Subscriber::Subscriber(std::shared_ptr<rclcpp::Node> nh,
                        const std::string &topic,
                        uint32_t queue_size,
                        const std::function<void(const std::shared_ptr<M > )> &callback,
@@ -239,7 +239,7 @@ Subscriber::Subscriber(rclcpp::node::Node *nh,
 
 template<class M>
 inline
-Subscriber::Subscriber(rclcpp::node::Node *nh,
+Subscriber::Subscriber(std::shared_ptr<rclcpp::Node> nh,
                        const std::string &topic,
                        std::shared_ptr< M > *dest,
                        const rmw_qos_profile_t& transport_hints)
@@ -306,10 +306,10 @@ int Subscriber::messageCount() const
 }
 
 inline
-rclcpp::Time Subscriber::age(const rclcpp::Time &now) const
+rclcpp::Duration Subscriber::age(const rclcpp::Time &now) const
 {
   if (now == rclcpp::Time(0, 0, RCL_ROS_TIME)) {
-    return impl_->age(rclcpp::Time::now(RCL_ROS_TIME));
+    return impl_->age(impl_->nh_->now());
   } else {
     return impl_->age(now);
   }

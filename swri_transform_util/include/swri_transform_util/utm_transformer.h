@@ -165,6 +165,7 @@ namespace swri_transform_util
   {
   public:
     UtmToWgs84Transform(
+        const builtin_interfaces::msg::Time& time,
         std::shared_ptr<UtmUtil> utm_util,
         int32_t utm_zone,
         char utm_band);
@@ -188,6 +189,7 @@ namespace swri_transform_util
   {
   public:
     explicit Wgs84ToUtmTransform(
+        const builtin_interfaces::msg::Time& time,
         std::shared_ptr<UtmUtil> utm_util,
         int32_t utm_zone,
         char utm_band);

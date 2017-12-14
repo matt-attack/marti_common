@@ -73,6 +73,7 @@ namespace swri_transform_util
       if (source_frame == _wgs84_frame)
       {
         transform = std::make_shared<Wgs84ToUtmTransform>(
+            time,
             utm_util_,
             utm_zone_,
             utm_band_);
@@ -101,6 +102,7 @@ namespace swri_transform_util
     else if (target_frame == _wgs84_frame && source_frame == _utm_frame)
     {
       transform = std::make_shared<UtmToWgs84Transform>(
+          time,
           utm_util_,
           utm_zone_,
           utm_band_);
@@ -223,7 +225,7 @@ namespace swri_transform_util
         local_xy_util_,
         utm_zone_,
         utm_band_);
-    inverse->stamp_ = stamp_;
+    //inverse->stamp_ = stamp_;
     return inverse;
   }
 
@@ -284,11 +286,12 @@ namespace swri_transform_util
         local_xy_util_,
         utm_zone_,
         utm_band_);
-    inverse->stamp_ = stamp_;
+    //inverse->stamp_ = stamp_;
     return inverse;
   }
 
   UtmToWgs84Transform::UtmToWgs84Transform(
+    const builtin_interfaces::msg::Time& time,
     std::shared_ptr<UtmUtil> utm_util,
     int32_t utm_zone,
     char utm_band) :
@@ -296,7 +299,7 @@ namespace swri_transform_util
     utm_zone_(utm_zone),
     utm_band_(utm_band)
   {
-    stamp_ = rclcpp::Time::now();
+    stamp_ = time;//handle_->now();
   }
 
   void UtmToWgs84Transform::Transform(const tf2::Vector3& v_in, tf2::Vector3& v_out) const
@@ -309,15 +312,17 @@ namespace swri_transform_util
   TransformImplPtr UtmToWgs84Transform::Inverse() const
   {
     TransformImplPtr inverse = std::make_shared<Wgs84ToUtmTransform>(
+        stamp_,
         utm_util_,
         utm_zone_,
         utm_band_);
-    inverse->stamp_ = stamp_;
+    //inverse->stamp_ = stamp_;
     return inverse;
   }
 
 
   Wgs84ToUtmTransform::Wgs84ToUtmTransform(
+    const builtin_interfaces::msg::Time& time,
     std::shared_ptr<UtmUtil> utm_util,
     int32_t utm_zone,
     char utm_band) :
@@ -325,7 +330,7 @@ namespace swri_transform_util
     utm_zone_(utm_zone),
     utm_band_(utm_band)
   {
-    stamp_ = rclcpp::Time::now();
+    stamp_ = time;//handle_->now();
   }
 
   void Wgs84ToUtmTransform::Transform(const tf2::Vector3& v_in, tf2::Vector3& v_out) const
@@ -338,10 +343,11 @@ namespace swri_transform_util
   TransformImplPtr Wgs84ToUtmTransform::Inverse() const
   {
     TransformImplPtr inverse = std::make_shared<UtmToWgs84Transform>(
+        stamp_,
         utm_util_,
         utm_zone_,
         utm_band_);
-    inverse->stamp_ = stamp_;
+    //inverse->stamp_ = stamp_;
     return inverse;
   }
 }

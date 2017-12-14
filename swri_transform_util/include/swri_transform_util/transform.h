@@ -115,14 +115,14 @@ namespace swri_transform_util
     /**
      * Generates an identity transform.
      */
-    Transform();
+    Transform(const builtin_interfaces::msg::Time& time);
 
     /**
      * Generates a standard rigid transform from a tf2::Transform.
      *
      * @param[in]  transform  The input transform.
      */
-    explicit Transform(const tf2::Transform& transform);
+    explicit Transform(const builtin_interfaces::msg::Time& time, const tf2::Transform& transform);
     
     /**
      * Generates a standard rigid transform from a tf2::Transform.
@@ -145,7 +145,7 @@ namespace swri_transform_util
      *
      * @param[in]  transform  The input transform.
      */
-    Transform& operator=(const tf2::Transform transform);
+    //Transform& operator=(const tf2::Transform transform);
 
     /**
      * Assignment operator for TransformImpl.
@@ -232,10 +232,11 @@ namespace swri_transform_util
   class IdentityTransform : public TransformImpl
   {
   public:
+
     /**
      * Construct an identity transform with stamp_=ros::Time::now()
      */
-    IdentityTransform() { stamp_ = rclcpp::Time::now(); }
+    IdentityTransform(const builtin_interfaces::msg::Time& time) { stamp_ = time; }
 
     /**
      * Apply the identity tranform to a 3D vector(sets v_out=v_in)
@@ -258,7 +259,7 @@ namespace swri_transform_util
      * Construct a TfTransform from a tf2::Transform
      * @param transform The TF Transform that this TfTransform performs
      */
-    explicit TfTransform(const tf2::Transform& transform);
+    explicit TfTransform(const builtin_interfaces::msg::Time& time, const tf2::Transform& transform);
 
     /**
      * Construct a TfTransform from a tf2::StampedTransform

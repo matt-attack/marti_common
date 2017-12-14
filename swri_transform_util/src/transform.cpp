@@ -29,17 +29,15 @@
 
 #include <swri_transform_util/transform.h>
 
-//#include <boost/make_shared.hpp>
-
 namespace swri_transform_util
 {
-  Transform::Transform() :
-    transform_(std::make_shared<IdentityTransform>())
+  Transform::Transform(const builtin_interfaces::msg::Time& time) :
+    transform_(std::make_shared<IdentityTransform>(time))
   {
   }
 
-  Transform::Transform(const tf2::Transform& transform) :
-    transform_(std::make_shared<TfTransform>(transform))
+  Transform::Transform(const builtin_interfaces::msg::Time& time, const tf2::Transform& transform) :
+    transform_(std::make_shared<TfTransform>(time, transform))
   {
   }
   
@@ -53,12 +51,12 @@ namespace swri_transform_util
   {
   }
 
-  Transform& Transform::operator=(const tf2::Transform transform)
+  /*Transform& Transform::operator=(const tf2::Transform transform)
   {
     transform_ = std::make_shared<TfTransform>(transform);
 
     return *this;
-  }
+  }*/
 
   Transform& Transform::operator=(std::shared_ptr<TransformImpl> transform)
   {
@@ -124,15 +122,15 @@ namespace swri_transform_util
   std::shared_ptr<TransformImpl> IdentityTransform::Inverse() const
   {
     TransformImplPtr inverse = 
-        std::make_shared<IdentityTransform>();
-    inverse->stamp_ = stamp_;
+        std::make_shared<IdentityTransform>(stamp_);
+    //inverse->stamp_ = stamp_;
     return inverse;
   }
 
-  TfTransform::TfTransform(const tf2::Transform& transform) :
+  TfTransform::TfTransform(const builtin_interfaces::msg::Time& time, const tf2::Transform& transform) :
     transform_(transform)
   {
-    stamp_ = rclcpp::Time::now();
+    stamp_ = time;
   }
   
   TfTransform::TfTransform(const geometry_msgs::msg::TransformStamped& transform) //:
@@ -155,8 +153,8 @@ namespace swri_transform_util
   TransformImplPtr TfTransform::Inverse() const
   {
     TransformImplPtr inverse = 
-        std::make_shared<TfTransform>(transform_.inverse());
-    inverse->stamp_ = stamp_;
+        std::make_shared<TfTransform>(stamp_, transform_.inverse());
+    //inverse->stamp_ = stamp_;
     return inverse;
   }
 }

@@ -1,6 +1,6 @@
 // *****************************************************************************
 //
-// Copyright (c) 2014, Southwest Research Institute® (SwRI®)
+// Copyright (c) 2017, Southwest Research Institute® (SwRI®)
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -17,7 +17,7 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+// ARE DISCLAIMED. IN NO EVENT SHALL SOUTHWEST RESEARCH INSTITUTE BE LIABLE FOR ANY
 // DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 // (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
 // LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
@@ -26,21 +26,39 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // *****************************************************************************
+#ifndef SWRI_ROSCPP_LOGGING_H_
+#define SWRI_ROSCPP_LOGGING_H_
 
-#include <ros/ros.h>
-#include <nodelet/loader.h>
+#include <rclcpp/node.hpp>
+#include <rclcpp/logging.hpp>
 
-int main(int argc, char **argv)
+#define ROS_ERROR(...) RCLCPP_ERROR(swri::get_logger(), __VA_ARGS__)
+#define ROS_WARN(...) RCLCPP_ERROR(swri::get_logger(), __VA_ARGS__)
+#define ROS_INFO(...) RCLCPP_ERROR(swri::get_logger(), __VA_ARGS__)
+#define ROS_DEBUG(...) RCLCPP_ERROR(swri::get_logger(), __VA_ARGS__)
+#define ROS_FATAL(...) RCLCPP_FATAL(swri::get_logger(), __VA_ARGS__)
+
+#if NDEBUG
+#define ROS_ASSERT(cond) \
+  do { \
+    if (!(cond)) { \
+      ROS_FATAL("ASSERTION FAILED\n\tfile = %s\n\tline = %d\n\tcond = %s\n", __FILE__, __LINE__, #cond); \
+      ROS_ISSUE_BREAK() \
+    } \
+  } while (false)
+
+#else
+#define ROS_ASSERT(cond)
+#endif
+
+namespace swri
 {
-  ros::init(argc, argv, "rotate_image", ros::init_options::AnonymousName);
+  // The node handle used for all of the loggers
+  extern std::shared_ptr<rclcpp::Node> _node_handle;
 
-  nodelet::Loader manager(false);
+  /* Call this once in every exectuable with one of the nodes to enable easy logging */
+  void setup_logging(std::shared_ptr<rclcpp::Node> ptr);
 
-  nodelet::M_string remappings;
-  nodelet::V_string my_argv;
-  manager.load(ros::this_node::getName(), "swri_image_util/rotate_image",
-      remappings, my_argv);
-
-  ros::spin();
-  return 0;
-}
+  rclcpp::Logger get_logger();
+}  // namespace swri
+#endif  // SWRI_ROSCPP_LOGGING_H_

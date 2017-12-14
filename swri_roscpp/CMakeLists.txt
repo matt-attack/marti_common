@@ -46,6 +46,14 @@ set(RUNTIME_DEPS diagnostic_updater nav_msgs rclcpp std_msgs std_srvs)
 #add_executable(param_example src/nodes/param_example.cpp)
 #target_link_libraries(param_example ${LIBS})
 
+add_library(${PROJECT_NAME}
+  src/logging.cpp
+)
+ament_target_dependencies(${PROJECT_NAME}
+  rclcpp
+)
+target_link_libraries(${PROJECT_NAME} ${LIBS})
+
 if(BUILD_TESTING)
   #find_package(rostest REQUIRED)
   #add_rostest_gtest(test_params test/params.test test/params.cpp)
@@ -54,6 +62,7 @@ endif()
 
 ### Install Test Node and Headers ###
 install(TARGETS 
+  ${PROJECT_NAME}
   #subscriber_test latched_subscriber_test param_example
   ARCHIVE
   DESTINATION lib

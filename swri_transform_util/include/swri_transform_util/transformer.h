@@ -34,6 +34,8 @@
 #include <string>
 #include <vector>
 
+#include <rclcpp/node.hpp>
+
 #include <tf2/transform_datatypes.h>
 #include <tf2_ros/transform_listener.h>
 
@@ -61,7 +63,7 @@ namespace swri_transform_util
        *    node use the same tf::TransformListener to reduce redundant
        *    computation.
        */
-      void Initialize(rclcpp::node::Node* handle_, const std::shared_ptr<tf2_ros::Buffer> tf);
+      void Initialize(std::shared_ptr<rclcpp::Node> handle_, const std::shared_ptr<tf2_ros::Buffer> tf);
 
       /**
        * Get a map of the transforms supported by this Transformer
@@ -95,7 +97,7 @@ namespace swri_transform_util
     protected:
       bool initialized_;
       std::shared_ptr<tf2_ros::Buffer> tf_listener_;
-      rclcpp::node::Node* handle_;
+      std::shared_ptr<rclcpp::Node> handle_;
 
       virtual bool Initialize();
 

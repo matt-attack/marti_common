@@ -21,7 +21,7 @@ namespace swri
   static std::set<std::string> _used_params;
 
   static inline
-  bool getParam(const rclcpp::node::Node *nh,
+  bool getParam(const std::shared_ptr<rclcpp::Node>& nh,
       const std::string &name,
       int &variable)
   {
@@ -37,7 +37,7 @@ namespace swri
   }
 
   static inline
-  bool getParam(const rclcpp::node::Node *nh,
+  bool getParam(const std::shared_ptr<rclcpp::Node>& nh,
       const std::string &name,
       double &variable)
   {
@@ -53,7 +53,7 @@ namespace swri
   }
 
   static inline
-  bool getParam(const rclcpp::node::Node* nh,
+  bool getParam(const rclcpp::Node* nh,
       const std::string &name,
       float &variable)
   {
@@ -69,7 +69,7 @@ namespace swri
   }
 
   static inline
-  bool getParam(const rclcpp::node::Node* nh,
+  bool getParam(const rclcpp::Node* nh,
       const std::string &name,
       std::string &variable)
   {
@@ -85,7 +85,7 @@ namespace swri
   }
 
   static inline
-  bool getParam(const rclcpp::node::Node* nh,
+  bool getParam(const rclcpp::Node* nh,
       const std::string &name,
       bool &variable)
   {
@@ -101,7 +101,7 @@ namespace swri
   }
 
   static inline
-  void param(const rclcpp::node::Node *nh,
+  void param(const std::shared_ptr<rclcpp::Node>& nh,
       const std::string &name,
       int &variable,
       const int default_value)
@@ -113,7 +113,7 @@ namespace swri
   }
 
   static inline
-  void param(const rclcpp::node::Node *nh,
+  void param(const std::shared_ptr<rclcpp::Node>& nh,
       const std::string &name,
       double &variable,
       const double default_value)
@@ -125,7 +125,7 @@ namespace swri
   }
 
   static inline
-  void param(const rclcpp::node::Node *nh,
+  void param(const std::shared_ptr<rclcpp::Node>& nh,
       const std::string &name,
       float &variable,
       const float default_value)
@@ -138,7 +138,7 @@ namespace swri
   }
 
   static inline
-  void param(const rclcpp::node::Node *nh,
+  void param(const std::shared_ptr<rclcpp::Node>& nh,
       const std::string &name,
       std::string &variable,
       const std::string default_value)
@@ -150,7 +150,7 @@ namespace swri
   }
 
   static inline
-  void param(const rclcpp::node::Node *nh,
+  void param(const std::shared_ptr<rclcpp::Node>& nh,
       const std::string &name,
       bool &variable,
       const bool default_value)
