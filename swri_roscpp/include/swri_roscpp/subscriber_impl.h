@@ -52,15 +52,15 @@ class SubscriberImpl
   rclcpp::Time last_header_stamp_ = rclcpp::Time(0, 0, RCL_ROS_TIME);
   //rclcpp::Time last_receive_time_;
 
-  /*ros::Duration total_latency_;
-  ros::Duration min_latency_;
-  ros::Duration max_latency_;
+  //rclcpp::Duration total_latency_;
+  //rclcpp::Duration min_latency_;
+  //rclcpp::Duration max_latency_;
 
-  ros::Duration total_periods_;
-  ros::Duration min_period_;
-  ros::Duration max_period_;
+  //rclcpp::Duration total_periods_;
+  //rclcpp::Duration min_period_;
+  //rclcpp::Duration max_period_;
 
-  ros::Duration timeout_;*/
+  rclcpp::Duration timeout_ = rclcpp::Duration(1000000, 0);
   bool in_timeout_;
   int timeout_count_;
   bool blocking_timeout_;
@@ -234,14 +234,14 @@ class SubscriberImpl
     } else {
       return max_period_;
     }
-  }
+  }*/
 
-  void setTimeout(const ros::Duration &time_out)
+  void setTimeout(const rclcpp::Duration &time_out)
   {
     timeout_ = time_out;
     in_timeout_ = false;
     timeout_count_ = 0;
-  }*/
+  }
 
   /*bool blockTimeouts(bool block) {
     if (block) {
@@ -265,19 +265,19 @@ class SubscriberImpl
   bool timeoutEnabled() const
   {
     return timeout_ > ros::Duration(0.0);
-  }
+  }*/
 
   bool inTimeout()
   {
-    checkTimeout(ros::Time::now());
+    checkTimeout(nh_->now());
     return in_timeout_;
   }
 
   int timeoutCount()
   {
-    checkTimeout(ros::Time::now());
+    checkTimeout(nh_->now());
     return timeout_count_;
-  }*/
+  }
 };  // class SubscriberImpl
 
 struct TrueType

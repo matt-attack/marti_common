@@ -143,20 +143,20 @@ class Subscriber
   ros::Duration maxPeriod() const;
   double meanPeriodMilliseconds() const;
   double minPeriodMilliseconds() const;
-  double maxPeriodMilliseconds() const;
+  double maxPeriodMilliseconds() const;*/
 
   // Provide a negative value to disable the timeout (default is -1).
-  void setTimeout(const ros::Duration &time_out);
+  void setTimeout(const rclcpp::Duration &time_out);
   void setTimeout(const double time_out);
   // Read the timeout directly from the parameter server.
-  void timeoutParam(const ros::NodeHandle &nh,
+  void timeoutParam(const std::shared_ptr<rclcpp::Node> &nh,
                     const std::string &parameter_name,
                     const double default_value);
   
   // Block/unblock timeouts from occuring.  This allows you to
   // temporarily block timeouts (for example, if a message is not
   // expected in a particular mode).  Returns the current state
-  bool blockTimeouts(bool block);
+  /*bool blockTimeouts(bool block);
 
   // Return true if the subscriber is currently blocking timeouts from
   // occurring.
@@ -166,12 +166,12 @@ class Subscriber
   bool timeoutEnabled() const;
   // Read the current timeout setting.
   ros::Duration timeout() const;
-  double timeoutMilliseconds() const;
+  double timeoutMilliseconds() const;*/
 
   // Determine if the topic is in a timed out state.
   bool inTimeout();
   // How many times the topic has been in a timeout state.
-  int timeoutCount();*/
+  int timeoutCount();
 
   // These flags determine which values are added to a diagnostic
   // status by the appendDiagnostics method.
@@ -403,10 +403,10 @@ inline
 double Subscriber::maxPeriodMilliseconds() const
 {
   return maxPeriod().toNSec() / 1000000.0;
-}
+}*/
 
 inline
-void Subscriber::setTimeout(const ros::Duration &time_out)
+void Subscriber::setTimeout(const rclcpp::Duration &time_out)
 {
   impl_->setTimeout(time_out);
 }
@@ -414,12 +414,12 @@ void Subscriber::setTimeout(const ros::Duration &time_out)
 inline
 void Subscriber::setTimeout(const double time_out)
 {
-  setTimeout(ros::Duration(time_out));
-}*/
+  setTimeout(rclcpp::Duration(static_cast<int64_t>(time_out*1000000000.0)));
+}
 
-/*inline
+inline
 void Subscriber::timeoutParam(
-  const ros::NodeHandle &nh,
+  const std::shared_ptr<rclcpp::Node> &nh,
   const std::string &parameter_name,
   const double default_value)
 {
@@ -428,7 +428,7 @@ void Subscriber::timeoutParam(
   setTimeout(timeout);
 }
 
-inline
+/*inline
 bool Subscriber::blockTimeouts(bool block)
 {
   return impl_->blockTimeouts(block);
@@ -456,7 +456,7 @@ inline
 double Subscriber::timeoutMilliseconds() const
 {
   return impl_->timeout().toNSec() / 1.0e6;
-}
+}*/
 
 inline
 bool Subscriber::inTimeout()
@@ -468,7 +468,7 @@ inline
 int Subscriber::timeoutCount()
 {
   return impl_->timeoutCount();
-}*/
+}
 
 /*inline
 void Subscriber::appendDiagnostics(diagnostic_updater::DiagnosticStatusWrapper &status,
