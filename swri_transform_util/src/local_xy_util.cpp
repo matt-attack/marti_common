@@ -44,6 +44,8 @@
 #include <swri_transform_util/earth_constants.h>
 #include <swri_transform_util/transform_util.h>
 
+#include <swri_roscpp/logging.h>
+
 using std::placeholders::_1;
 
 namespace swri_transform_util
@@ -105,7 +107,7 @@ namespace swri_transform_util
   {
     //ros::NodeHandle node;
 
-    printf("INFO: Subscribing to /local_xy_origin");
+    ROS_INFO("Subscribing to /local_xy_origin");
     origin_sub_ = handle->create_subscription<gps_common::msg::GPSFix>("/local_xy_origin", std::bind(&LocalXyWgs84Util::HandleOrigin, this, _1));
   }
 
@@ -219,7 +221,7 @@ namespace swri_transform_util
       }
       catch (...) {}*/
 
-      printf("WARN: Invalid /local_xy topic type.");
+      ROS_WARN("Invalid /local_xy topic type.");
     }
     origin_sub_.reset();//shutdown();
   }

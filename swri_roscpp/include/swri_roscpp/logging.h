@@ -33,9 +33,9 @@
 #include <rclcpp/logging.hpp>
 
 #define ROS_ERROR(...) RCLCPP_ERROR(swri::get_logger(), __VA_ARGS__)
-#define ROS_WARN(...) RCLCPP_ERROR(swri::get_logger(), __VA_ARGS__)
-#define ROS_INFO(...) RCLCPP_ERROR(swri::get_logger(), __VA_ARGS__)
-#define ROS_DEBUG(...) RCLCPP_ERROR(swri::get_logger(), __VA_ARGS__)
+#define ROS_WARN(...) RCLCPP_WARN(swri::get_logger(), __VA_ARGS__)
+#define ROS_INFO(...) RCLCPP_WARN(swri::get_logger(), __VA_ARGS__)
+#define ROS_DEBUG(...) RCLCPP_DEBUG(swri::get_logger(), __VA_ARGS__)
 #define ROS_FATAL(...) RCLCPP_FATAL(swri::get_logger(), __VA_ARGS__)
 
 #if NDEBUG
@@ -46,7 +46,6 @@
       ROS_ISSUE_BREAK() \
     } \
   } while (false)
-
 #else
 #define ROS_ASSERT(cond)
 #endif

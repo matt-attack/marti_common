@@ -29,22 +29,23 @@
 #ifndef SWRI_ROSCPP_PUBLISHER_H_
 #define SWRI_ROSCPP_PUBLISHER_H_
 
-#include <ros/node_handle.h>
+#include <rclcpp/node.hpp>
 
 namespace swri
 {
 template<typename M>
-ros::Publisher advertise(
-  ros::NodeHandle &nh,
+std::shared_ptr<rclcpp::Publisher<M>> advertise(
+  std::shared_ptr<rclcpp::Node> &nh,
   const std::string name,
   uint32_t queue_size,
   bool latched=false)
 {
-  const std::string resolved_name = nh.resolveName(name);
+  const std::string resolved_name = name;//nh.resolveName(name);
   ROS_INFO("Publishing [%s] to '%s'.",
            name.c_str(),
            resolved_name.c_str());
-  return nh.advertise<M>(name, queue_size, latched);
+  //TODO NO LATCHED ANYMORE
+  return nh->create_publisher<M>(name, queue_size);
 }    
 }  // namespace swri
 #endif  // SWRI_ROSCPP_PUBLISHER_H_

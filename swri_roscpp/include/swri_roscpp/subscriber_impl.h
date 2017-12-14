@@ -32,6 +32,8 @@
 #include <std_msgs/msg/header.hpp>
 #include <rclcpp/rclcpp.hpp>
 
+#include <swri_roscpp/logging.h>
+
 namespace swri
 {
 class Subscriber;
@@ -303,9 +305,9 @@ class TypedSubscriberImpl : public SubscriberImpl
     nh_ = nh;
 
     if (unmapped_topic_ == mapped_topic_) {
-      printf("INFO: Subscribing to '%s'.\n", mapped_topic_.c_str());
+      ROS_INFO("Subscribing to '%s'.", mapped_topic_.c_str());
     } else {
-      printf("INFO: Subscribing to '%s' at '%s'.\n",
+      ROS_INFO("Subscribing to '%s' at '%s'.",
                unmapped_topic_.c_str(),
                mapped_topic_.c_str());
     }
@@ -357,9 +359,9 @@ class BindSubscriberImpl : public SubscriberImpl
     nh_ = nh;
 
     if (unmapped_topic_ == mapped_topic_) {
-      printf("INFO: Subscribing to '%s'.\n", mapped_topic_.c_str());
+      ROS_INFO("Subscribing to '%s'.", mapped_topic_.c_str());
     } else {
-      printf("INFO: Subscribing to '%s' at '%s'.\n",
+      ROS_INFO("Subscribing to '%s' at '%s'.",
                unmapped_topic_.c_str(),
                mapped_topic_.c_str());
     }
@@ -409,9 +411,9 @@ class StorageSubscriberImpl : public SubscriberImpl
     nh_ = nh;
 
     if (unmapped_topic_ == mapped_topic_) {
-      printf("INFO: Subscribing to '%s'.\n", mapped_topic_.c_str());
+      ROS_INFO("Subscribing to '%s'.", mapped_topic_.c_str());
     } else {
-      printf("INFO: Subscribing to '%s' at '%s'.\n",
+      ROS_INFO("Subscribing to '%s' at '%s'.",
                unmapped_topic_.c_str(),
                mapped_topic_.c_str());
     }

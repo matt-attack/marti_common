@@ -10,6 +10,8 @@
 
 #include <boost/bind.hpp>
 
+#include <swri_roscpp/logging.h>
+
 //#include <ros/console.h>
 //#include <ros/node_handle.h>
 
@@ -29,10 +31,10 @@ namespace swri
     _used_params.insert(resolved_name);
     if (!nh->get_parameter(name, variable))
     {
-      printf("ERROR: Required int parameter %s does not exist", name.c_str());
+      ROS_ERROR("Required int parameter %s does not exist", name.c_str());
       return false;
     }
-    printf("INFO: Read parameter %s = %d\n", name.c_str(), variable);
+    ROS_INFO("Read parameter %s = %d", name.c_str(), variable);
     return true;
   }
 
@@ -45,10 +47,10 @@ namespace swri
     _used_params.insert(resolved_name);
     if (!nh->get_parameter(name, variable))
     {
-      printf("ERROR: Required double parameter %s does not exist", name.c_str());
+      ROS_ERROR("Required double parameter %s does not exist", name.c_str());
       return false;
     }
-    printf("INFO: Read parameter %s = %lf\n", name.c_str(), variable);
+    ROS_INFO("Read parameter %s = %lf", name.c_str(), variable);
     return true;
   }
 
@@ -60,11 +62,11 @@ namespace swri
     double dbl_value;
     if (!nh->get_parameter(name, dbl_value))
     {
-      printf("ERROR: Required double parameter %s does not exist", name.c_str());
+      ROS_ERROR("Required double parameter %s does not exist", name.c_str());
       return false;
     }
     variable = dbl_value;
-    printf("INFO: Read parameter %s = %f\n", name.c_str(), variable);
+    ROS_INFO("Read parameter %s = %f", name.c_str(), variable);
     return true;
   }
 
@@ -77,10 +79,10 @@ namespace swri
     _used_params.insert(resolved_name);
     if (!nh->get_parameter(name, variable))
     {
-      printf("ERROR: Required string parameter %s does not exist", name.c_str());
+      ROS_ERROR("Required string parameter %s does not exist", name.c_str());
       return false;
     }
-    printf("INFO: Read parameter %s = %s\n", name.c_str(), variable.c_str());
+    ROS_INFO("Read parameter %s = %s", name.c_str(), variable.c_str());
     return true;
   }
 
@@ -93,10 +95,10 @@ namespace swri
     _used_params.insert(resolved_name);
     if (!nh->get_parameter(name, variable))
     {
-      printf("ERROR: Required bool parameter %s does not exist", name.c_str());
+      ROS_ERROR("Required bool parameter %s does not exist", name.c_str());
       return false;
     }
-    printf("INFO: Read parameter %s = %s\n", name.c_str(), variable ? "true" : "false");
+    ROS_INFO("Read parameter %s = %s", name.c_str(), variable ? "true" : "false");
     return true;
   }
 
@@ -109,7 +111,7 @@ namespace swri
     std::string resolved_name = name;//nh.resolveName(name);
     _used_params.insert(resolved_name);
     nh->get_parameter_or(name, variable, default_value);
-    printf("INFO: Read parameter %s = %d\n", name.c_str(), variable);
+    ROS_INFO("Read parameter %s = %d", name.c_str(), variable);
   }
 
   static inline
@@ -121,7 +123,7 @@ namespace swri
     std::string resolved_name = name;//nh.resolveName(name);
     _used_params.insert(resolved_name);
     nh->get_parameter_or(name, variable, default_value);
-    printf("INFO: Read parameter %s = %lf\n", name.c_str(), variable);
+    ROS_INFO("Read parameter %s = %lf", name.c_str(), variable);
   }
 
   static inline
@@ -134,7 +136,7 @@ namespace swri
     double dbl_default = default_value;
     nh->get_parameter_or(name, dbl_value, dbl_default);
     variable = dbl_value;
-    printf("INFO: Read parameter %s = %f", name.c_str(), variable);
+    ROS_INFO("Read parameter %s = %f", name.c_str(), variable);
   }
 
   static inline
@@ -146,7 +148,7 @@ namespace swri
     std::string resolved_name = name;//nh.resolveName(name);
     _used_params.insert(resolved_name);
     nh->get_parameter_or(name, variable, default_value);
-    printf("INFO: Read parameter %s = \"%s\"\n", name.c_str(), variable.c_str());
+    ROS_INFO("Read parameter %s = \"%s\"", name.c_str(), variable.c_str());
   }
 
   static inline
@@ -158,7 +160,7 @@ namespace swri
     std::string resolved_name = name;//nh.resolveName(name);
     _used_params.insert(resolved_name);
     nh->get_parameter_or(name, variable, default_value);
-    printf("INFO: Read parameter %s = %s\n", name.c_str(), variable ? "true" : "false");
+    ROS_INFO("Read parameter %s = %s", name.c_str(), variable ? "true" : "false");
   }
 
   /**

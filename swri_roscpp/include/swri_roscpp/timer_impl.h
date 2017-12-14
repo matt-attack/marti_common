@@ -35,17 +35,17 @@ class Timer;
 class TimerImpl
 {
  protected:
-  ros::Timer timer_;
-  ros::Duration desired_period_;
+  rclcpp::TimerBase::SharedPtr timer_;
+  rclcpp::Duration desired_period_;
 
   int ticks_;
 
   ros::WallTime tick_begin_wall_;
-  ros::Time tick_begin_normal_;
+  rclcpp::Time tick_begin_normal_;
 
-  ros::Duration total_periods_;
-  ros::Duration min_period_;
-  ros::Duration max_period_;
+  rclcpp::Duration total_periods_;
+  rclcpp::Duration min_period_;
+  rclcpp::Duration max_period_;
 
   ros::WallDuration total_durations_;
   ros::WallDuration min_duration_;
@@ -92,7 +92,7 @@ class TimerImpl
     resetStatistics();
   }
 
-  ros::Duration desiredPeriod() const
+  rclcpp::Duration desiredPeriod() const
   {
     return desired_period_;
   }
@@ -113,59 +113,59 @@ class TimerImpl
     if (ticks_ < 2) {
       return 0.0;
     } else {
-      return 1e9 / meanPeriod().toNSec();
+      return 1e9 / meanPeriod().nanoseconds();
     }
   }
   
-  ros::Duration meanPeriod() const
+  rclcpp::Duration meanPeriod() const
   {
     if (ticks_ < 2) {
-      return ros::DURATION_MAX;
+      return rclcpp::DURATION_MAX;
     } else {
-      return ros::Duration(total_periods_.toSec() / (ticks_ - 1));
+      return rclcpp::Duration(total_periods_.toSec() / (ticks_ - 1));
     }
   }
   
-  ros::Duration minPeriod() const
+  rclcpp::Duration minPeriod() const
   {
     if (ticks_ < 2) {
-      return ros::DURATION_MAX;
+      return rclcpp::DURATION_MAX;
     } else {
       return min_period_;
     }
   }
   
-  ros::Duration maxPeriod() const
+  rclcpp::Duration maxPeriod() const
   {
     if (ticks_ < 2) {
-      return ros::DURATION_MAX;
+      return rclcpp::DURATION_MAX;
     } else {
       return max_period_;
     }
   }
   
-  ros::WallDuration meanDuration() const
+  rclcpp::Duration meanDuration() const
   {
     if (ticks_ == 0) {
-      return ros::WallDuration(0.0);
+      return rclcpp::Duration(0.0);
     } else {
-      return ros::WallDuration(total_durations_.toSec() / ticks_);
+      return rclcpp::Duration(total_durations_.toSec() / ticks_);
     }
   }
   
-  ros::WallDuration minDuration() const
+  rclcpp::Duration minDuration() const
   {
     if (ticks_ == 0) {
-      return ros::WallDuration(0.0);
+      return rclcpp::Duration(0.0);
     } else {
       return min_duration_;
     }
   }
   
-  ros::WallDuration maxDuration() const
+  rclcpp::Duration maxDuration() const
   {
     if (ticks_ == 0) {
-      return ros::WallDuration(0.0);
+      return rclcpp::Duration(0.0);
     } else {
       return max_duration_;
     }
@@ -176,13 +176,13 @@ template<class T>
 class TypedTimerImpl : public TimerImpl
 {
   T *obj_;
-  void (T::*callback_)(const ros::TimerEvent &);
+  void (T::*callback_)();
 
  public:
   TypedTimerImpl(
-    ros::NodeHandle &nh,
-    ros::Duration period,
-    void(T::*callback)(const ros::TimerEvent&),
+    std::shared_ptr<rclcpp::Node> &nh,
+    rclcpp::Duration period,
+    void(T::*callback)(),
     T *obj)
   {
     callback_ = callback;
@@ -190,14 +190,14 @@ class TypedTimerImpl : public TimerImpl
 
     desired_period_ = period;
     timer_ = nh.createTimer(period,
-                            &TypedTimerImpl::handleTimer,
-                            this);
+                            std::bind(&TypedTimerImpl::handleTimer,
+                            this));
   }
  
-  void handleTimer(const ros::TimerEvent &event)
+  void handleTimer()
   {
     tickBegin();
-    (obj_->*callback_)(event);
+    (obj_->*callback_)();
     tickEnd();
   }
 };  // class TypedTimerImpl

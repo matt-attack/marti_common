@@ -21,5 +21,6 @@ namespace swri
       log = _node_handle->get_logger();
       ROS_INFO("Logger Setup");
     }
+    return log;
   }
 }

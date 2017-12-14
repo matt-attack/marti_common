@@ -77,7 +77,7 @@ namespace swri_transform_util
     if (!tf)
     {
       tf_buffer_ = std::make_shared<tf2_ros::Buffer>();
-      tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, handle, true);
+      tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, handle, false);
     }
     else
     {

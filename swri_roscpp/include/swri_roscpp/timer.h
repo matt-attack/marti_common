@@ -38,20 +38,20 @@ namespace swri
 class Timer
 {
  private:
-  boost::shared_ptr<TimerImpl> impl_;
+  std::shared_ptr<TimerImpl> impl_;
 
  public:
   Timer();
 
   template<class T>
-  Timer(ros::NodeHandle &nh,
-        ros::Duration period,
-        void(T::*callback)(const ros::TimerEvent&),
+  Timer(std::shared_ptr<rclcpp::Node> &nh,
+        rclcpp::Duration period,
+        void(T::*callback)(),
         T *obj);
 
   Timer& operator=(const Timer &other);
 
-  ros::Duration desiredPeriod() const;
+  rclcpp::Duration desiredPeriod() const;
   double desiredFrequency() const;
   
   void resetStatistics();
@@ -61,9 +61,9 @@ class Timer
 
   // Frequency/Period of the timer callbacks.
   double meanFrequencyHz() const;
-  ros::Duration meanPeriod() const;
-  ros::Duration minPeriod() const;
-  ros::Duration maxPeriod() const;
+  rclcpp::Duration meanPeriod() const;
+  rclcpp::Duration minPeriod() const;
+  rclcpp::Duration maxPeriod() const;
   double meanPeriodMilliseconds() const;
   double minPeriodMilliseconds() const;
   double maxPeriodMilliseconds() const;
@@ -88,9 +88,9 @@ class Timer
     DIAG_MOST     = DIAG_ALL ^ DIAG_COUNT
   };
 
-  void appendDiagnostics(diagnostic_updater::DiagnosticStatusWrapper &status,
-                         const std::string &name,
-                         const int flags);
+  //void appendDiagnostics(diagnostic_updater::DiagnosticStatusWrapper &status,
+  //                       const std::string &name,
+  //                       const int flags);
 };  // class Timer
 
 
@@ -99,17 +99,17 @@ Timer::Timer()
 {
   // Setup an empty implementation so that we can assume impl_ is
   // non-null and avoid a lot of unnecessary NULL checks.
-  impl_ = boost::shared_ptr<TimerImpl>(new TimerImpl());
+  impl_ = std::shared_ptr<TimerImpl>(new TimerImpl());
 }
 
 template<class T>
 inline
-Timer::Timer(ros::NodeHandle &nh,
-             ros::Duration period,
-             void(T::*callback)(const ros::TimerEvent&),
+Timer::Timer(std::shared_ptr<rclcpp::Node> &nh,
+             rclcpp::Duration period,
+             void(T::*callback)(),
              T *obj)
 {
-  impl_ = boost::shared_ptr<TimerImpl>(
+  impl_ = std::shared_ptr<TimerImpl>(
     new TypedTimerImpl<T>(nh, period, callback, obj));
 }
 
@@ -121,7 +121,7 @@ Timer& Timer::operator=(const Timer &other)
 }
 
 inline
-ros::Duration Timer::desiredPeriod() const
+rclcpp::Duration Timer::desiredPeriod() const
 {
   return impl_->desiredPeriod();
 }
@@ -157,13 +157,13 @@ ros::Duration Timer::meanPeriod() const
 }
 
 inline
-ros::Duration Timer::minPeriod() const
+rclcpp::Duration Timer::minPeriod() const
 {
   return impl_->minPeriod();
 }
 
 inline
-ros::Duration Timer::maxPeriod() const
+rclcpp::Duration Timer::maxPeriod() const
 {
   return impl_->maxPeriod();
 }
@@ -171,19 +171,19 @@ ros::Duration Timer::maxPeriod() const
 inline
 double Timer::meanPeriodMilliseconds() const
 {
-  return impl_->meanPeriod().toNSec() / 1000000.0;
+  return impl_->meanPeriod().nanoseconds() / 1000000.0;
 }
 
 inline
 double Timer::minPeriodMilliseconds() const
 {
-  return impl_->minPeriod().toNSec() / 1000000.0;
+  return impl_->minPeriod().nanoseconds() / 1000000.0;
 }
 
 inline
 double Timer::maxPeriodMilliseconds() const
 {
-  return impl_->maxPeriod().toNSec() / 1000000.0;
+  return impl_->maxPeriod().nanoseconds() / 1000000.0;
 }
 
 inline
@@ -224,7 +224,7 @@ double Timer::maxDurationMicroseconds() const
 
 
 
-inline
+/*inline
 void Timer::appendDiagnostics(diagnostic_updater::DiagnosticStatusWrapper &status,
                               const std::string &name,
                               int flags)
@@ -268,6 +268,6 @@ void Timer::appendDiagnostics(diagnostic_updater::DiagnosticStatusWrapper &statu
                   maxDurationMicroseconds());
     }
   }
-}
+}*/
 }  // namespace swri
 #endif  // SWRI_ROSCPP_TIMER_H_

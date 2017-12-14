@@ -7,7 +7,6 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 11)
 endif()
 
-#find_package(${BUILD_DEPS} REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 
@@ -72,10 +71,13 @@ install(TARGETS
   DESTINATION lib/${PROJECT_NAME})
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION include/${PROJECT_NAME})
-install(DIRECTORY launch/ DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY launch/ 
+  DESTINATION share/${PROJECT_NAME})
 
 ament_export_dependencies(${BUILD_DEPS})
 ament_export_dependencies(ament_cmake)
+ament_export_dependencies(rclcpp)
 ament_export_include_directories(${INCLUDE_DIRS})
+ament_export_libraries(${PROJECT_NAME})
 
 ament_package()
