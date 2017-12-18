@@ -13,8 +13,9 @@ find_package(rclpy REQUIRED)
 find_package(rclcpp REQUIRED)
 #find_package(swri_roscpp REQUIRED)
 find_package(swri_yaml_util REQUIRED)
-find_package(diagnostic_msgs REQUIRED)
+#find_package(diagnostic_msgs REQUIRED)
 find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
 #find_package(topic_tools REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(geometry_msgs REQUIRED)
@@ -48,7 +49,7 @@ set(LIBS ${gps_common_LIBRARIES} ${swri_math_util_LIBRARIES}
   ${rclpy_LIBRARIES} ${rclcpp_LIBRARIES}
   #${swri_roscpp_LIBRARIES} 
   ${swri_yaml_util_LIBRARIES}
-  ${diagnostic_msgs_LIBRARIES} ${tf2_LIBRARIES} ${topic_tools_LIBRARIES}
+  ${diagnostic_msgs_LIBRARIES} ${tf2_LIBRARIES} ${topic_tools_LIBRARIES} ${tf2_ros_LIBRARIES}
   ${ament_cmake_LIBRARIES} ${geometry_msgs_LIBRARIES})
 
 find_package(OpenCV REQUIRED core highgui imgproc video)
@@ -56,7 +57,8 @@ find_package(Boost REQUIRED)
 
 #generate_dynamic_reconfigure_options(cfg/DynamicPublisher.cfg)
 
-add_library(${PROJECT_NAME} src/georeference.cpp 
+add_library(${PROJECT_NAME} SHARED
+  src/georeference.cpp 
   src/local_xy_util.cpp
   src/utm_util.cpp 
   src/transform.cpp 
@@ -133,8 +135,9 @@ ament_export_dependencies(rclpy)
 ament_export_dependencies(rclcpp)
 #ament_export_dependencies(swri_roscpp)
 ament_export_dependencies(swri_yaml_util)
-ament_export_dependencies(diagnostic_msgs)
+#ament_export_dependencies(diagnostic_msgs)
 ament_export_dependencies(tf2)
+ament_export_dependencies(tf2_ros)
 ament_export_dependencies(tf2_geometry_msgs)
 #ament_export_dependencies(topic_tools)
 ament_export_dependencies(ament_cmake)

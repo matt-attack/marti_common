@@ -3,12 +3,21 @@ cmake_minimum_required(VERSION 3.5)
 project(swri_roscpp)
 
 # Add support for C++11
+#if(NOT CMAKE_CXX_STANDARD)
+#  set(CMAKE_CXX_STANDARD 11)
+#endif()
+
+# Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD 14)
 endif()
 
 find_package(ament_cmake REQUIRED)
+find_package(ament_index_cpp REQUIRED)
+find_package(class_loader REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rcutils REQUIRED)
+find_package(rosidl_cmake REQUIRED)
 
 set(INCLUDE_DIRS include ${${BUILD_DEPS}_INCLUDE_DIRS}
   ${ament_cmake_INCLUDE_DIRS})
@@ -20,9 +29,13 @@ link_directories(${LIBRARY_DIRS})
 
 set(LIBS ${${BUILD_DEPS}_LIBRARIES} ${ament_cmake_LIBRARIES})
 
-set(BUILD_DEPS diagnostic_updater nav_msgs rclcpp std_msgs std_srvs)
+set(BUILD_DEPS diagnostic_updater nav_msgs rclcpp std_msgs std_srvs class_loader)
 
 set(RUNTIME_DEPS diagnostic_updater nav_msgs rclcpp std_msgs std_srvs)
+
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "srv/LoadNode.srv"
+)
 
 ### Catkin ###
 
@@ -45,13 +58,50 @@ set(RUNTIME_DEPS diagnostic_updater nav_msgs rclcpp std_msgs std_srvs)
 #add_executable(param_example src/nodes/param_example.cpp)
 #target_link_libraries(param_example ${LIBS})
 
-add_library(${PROJECT_NAME}
-  src/logging.cpp
+add_executable(nodelet
+  src/nodelet.cpp
 )
-ament_target_dependencies(${PROJECT_NAME}
+ament_target_dependencies(nodelet
+  class_loader
+  rcutils
   rclcpp
 )
-target_link_libraries(${PROJECT_NAME} ${LIBS})
+target_link_libraries(nodelet 
+  ${LIBS} 
+  ${PROJECT_NAME}_core 
+  ament_index_cpp::ament_index_cpp
+)
+rosidl_target_interfaces(nodelet
+  ${PROJECT_NAME}
+  rosidl_typesupport_cpp
+)
+
+
+add_executable(nodelet_manager src/nodelet_manager.cpp)
+ament_target_dependencies(nodelet_manager
+  class_loader
+  rcutils
+  rclcpp
+  rosidl_typesupport_cpp
+)
+rosidl_target_interfaces(nodelet_manager
+  ${PROJECT_NAME} 
+  rosidl_typesupport_cpp
+)
+target_link_libraries(nodelet_manager 
+  ${LIBS} 
+  ${PROJECT_NAME}_core
+  ${rosidl_typesupport_cpp_LIBRARIES}
+  ament_index_cpp::ament_index_cpp
+)
+
+add_library(${PROJECT_NAME}_core SHARED
+  src/logging.cpp
+)
+ament_target_dependencies(${PROJECT_NAME}_core
+  rclcpp
+)
+target_link_libraries(${PROJECT_NAME}_core ${LIBS})
 
 if(BUILD_TESTING)
   #find_package(rostest REQUIRED)
@@ -61,7 +111,10 @@ endif()
 
 ### Install Test Node and Headers ###
 install(TARGETS 
-  ${PROJECT_NAME}
+  ${PROJECT_NAME}_core
+  nodelet_manager
+  nodelet
+  
   #subscriber_test latched_subscriber_test param_example
   ARCHIVE
   DESTINATION lib

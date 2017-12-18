@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<package format="2">
+<package format="3">
   <name>swri_roscpp</name>
   <version>1.2.0</version>
   <description>
@@ -10,6 +10,8 @@
   <maintainer email="elliot.johnson@swri.org">Elliot Johnson</maintainer>
   <license>BSD</license>
   <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <member_of_group>rosidl_interface_packages</member_of_group>
   <depend>diagnostic_updater</depend>
   <test_depend>gtest</test_depend>
   <depend>nav_msgs</depend>

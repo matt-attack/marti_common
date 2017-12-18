@@ -39,7 +39,7 @@ message(STATUS "Path: include/" ${PROJECT_NAME})
 
 find_package(Boost REQUIRED)
 
-add_library(${PROJECT_NAME} src/yaml_util.cpp)
+add_library(${PROJECT_NAME} SHARED src/yaml_util.cpp)
 target_link_libraries(${PROJECT_NAME} ${LIBS} ${YamlCpp_LIBRARIES})
 
 install(DIRECTORY include/${PROJECT_NAME}/

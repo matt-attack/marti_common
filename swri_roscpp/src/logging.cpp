@@ -8,7 +8,10 @@ namespace swri
 
   void setup_logging(std::shared_ptr<rclcpp::Node> ptr)
   {
-    _node_handle = ptr;
+    if (!_node_handle)
+    {
+      _node_handle = ptr;
+    }
   }
 
   rclcpp::Logger get_logger()

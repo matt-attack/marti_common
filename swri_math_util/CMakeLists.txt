@@ -25,7 +25,8 @@ if(${Boost_LIB_VERSION} MATCHES "1_46*")
   add_definitions(-DBOOST_1_46)
 endif(${Boost_LIB_VERSION} MATCHES "1_46*")
 
-add_library(${PROJECT_NAME} src/math_util.cpp src/trig_util.cpp src/random.cpp
+add_library(${PROJECT_NAME} SHARED
+  src/math_util.cpp src/trig_util.cpp src/random.cpp
 #  src/interpolation_1d.cpp
 )
 target_link_libraries(${PROJECT_NAME} ${LIBS} ${Boost_LIBRARIES})

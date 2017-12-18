@@ -1,0 +1,5 @@
+string package_name
+string plugin_name
+string[] parameters
+---
+bool success
