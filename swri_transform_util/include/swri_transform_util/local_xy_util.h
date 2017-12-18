@@ -36,7 +36,8 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/node.hpp>
-#include <gps_common/msg/gps_fix.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+//#include <gps_common/msg/gps_fix.hpp>
 //#include <topic_tools/shape_shifter.h>
 
 namespace swri_transform_util
@@ -215,12 +216,12 @@ namespace swri_transform_util
 
     std::string frame_;
 
-    std::shared_ptr<rclcpp::Subscription<gps_common::msg::GPSFix, std::allocator<void> > > origin_sub_;
+    std::shared_ptr<rclcpp::Subscription<geometry_msgs::msg::PoseStamped, std::allocator<void> > > origin_sub_;
     bool initialized_;
 
     void Initialize();
 
-    void HandleOrigin(const gps_common::msg::GPSFix::SharedPtr origin);
+    void HandleOrigin(const geometry_msgs::msg::PoseStamped::SharedPtr origin);
 //const topic_tools::ShapeShifter::ConstPtr origin);
   };
   typedef std::shared_ptr<LocalXyWgs84Util> LocalXyWgs84UtilPtr;

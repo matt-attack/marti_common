@@ -34,10 +34,11 @@
 #include <boost/make_shared.hpp>
 
 #include <tf2/transform_datatypes.h>
+#include <tf2/utils.h>
 
 //#include <geographic_msgs/GeoPose.h>
 #include <geometry_msgs/msg/pose_stamped.hpp>
-#include <gps_common/msg/gps_fix.hpp>
+//#include <gps_common/msg/gps_fix.hpp>
 
 #include <swri_math_util/constants.h>
 #include <swri_math_util/trig_util.h>
@@ -108,7 +109,7 @@ namespace swri_transform_util
     //ros::NodeHandle node;
 
     ROS_INFO("Subscribing to /local_xy_origin");
-    origin_sub_ = handle->create_subscription<gps_common::msg::GPSFix>("/local_xy_origin", std::bind(&LocalXyWgs84Util::HandleOrigin, this, _1));
+    origin_sub_ = handle->create_subscription<geometry_msgs::msg::PoseStamped>("/local_xy_origin", std::bind(&LocalXyWgs84Util::HandleOrigin, this, _1));
   }
 
   void LocalXyWgs84Util::Initialize()
@@ -132,7 +133,7 @@ namespace swri_transform_util
     initialized_ = true;
   }
 
-  void LocalXyWgs84Util::HandleOrigin(const gps_common::msg::GPSFix::SharedPtr origin)
+  void LocalXyWgs84Util::HandleOrigin(const geometry_msgs::msg::PoseStamped::SharedPtr origin)
 //const topic_tools::ShapeShifter::ConstPtr msg)
   {
     if (!initialized_)
@@ -144,7 +145,7 @@ namespace swri_transform_util
       //try
       //{
         //const gps_common::GPSFixConstPtr origin = msg->instantiate<gps_common::GPSFix>();
-        reference_latitude_ = origin->latitude * swri_math_util::_deg_2_rad;
+        /*reference_latitude_ = origin->latitude * swri_math_util::_deg_2_rad;
         reference_longitude_ = origin->longitude * swri_math_util::_deg_2_rad;
         reference_altitude_ = origin->altitude;
         
@@ -167,20 +168,20 @@ namespace swri_transform_util
 
         Initialize();
         origin_sub_.reset();//->shutdown();
-        return;
+        return;*/
       //}
       //catch (...) {}
 
-      /*try
-      {
-        const geometry_msgs::PoseStampedConstPtr origin = msg->instantiate<geometry_msgs::PoseStamped>();
+      //try
+      //{
+        //const geometry_msgs::PoseStamped::SharedPtr origin = msg->instantiate<geometry_msgs::PoseStamped>();
         reference_latitude_ = origin->pose.position.y * swri_math_util::_deg_2_rad;
         reference_longitude_ = origin->pose.position.x * swri_math_util::_deg_2_rad;
         reference_altitude_ = origin->pose.position.z;
 
         if (!ignore_reference_angle)
         {
-          reference_angle_ = tf::getYaw(origin->pose.orientation);
+          reference_angle_ = tf2::getYaw(origin->pose.orientation);
         }
 
         std::string frame = origin->header.frame_id;
@@ -190,14 +191,14 @@ namespace swri_transform_util
           // If the origin has an empty frame id, look for a frame in
           // the global parameter /local_xy_frame.  This provides
           // compatibility with older bag files.
-          node.param("/local_xy_frame", frame, frame_);
+          //node.param("/local_xy_frame", frame, frame_);
         }
 
         frame_ = frame;
 
         Initialize();
-        origin_sub_.shutdown();
-        return;
+        origin_sub_.reset();
+      /*  return;
       }
       catch (...) {}
 
