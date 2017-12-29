@@ -143,6 +143,9 @@ ament_export_dependencies(tf2_geometry_msgs)
 ament_export_dependencies(ament_cmake)
 ament_export_dependencies(geometry_msgs)
 ament_export_include_directories(${INCLUDE_DIRS})
-ament_export_libraries(${PROJECT_NAME} ${PROJECT_NAME}_nodelets ${LIBS} ${Boost_LIBRARIES} ${PROJ_LIBRARIES})
+ament_export_libraries(${PROJECT_NAME} 
+ #${PROJECT_NAME}_nodelets 
+ ${LIBS} ${Boost_LIBRARIES} ${PROJ_LIBRARIES}
+)
 
 ament_package()

@@ -29,9 +29,9 @@ link_directories(${LIBRARY_DIRS})
 
 set(LIBS ${${BUILD_DEPS}_LIBRARIES} ${ament_cmake_LIBRARIES})
 
-set(BUILD_DEPS diagnostic_updater nav_msgs rclcpp std_msgs std_srvs class_loader)
+set(BUILD_DEPS nav_msgs rclcpp std_msgs std_srvs class_loader)
 
-set(RUNTIME_DEPS diagnostic_updater nav_msgs rclcpp std_msgs std_srvs)
+set(RUNTIME_DEPS nav_msgs rclcpp std_msgs std_srvs)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/LoadNode.srv"
@@ -131,6 +131,6 @@ ament_export_dependencies(${BUILD_DEPS})
 ament_export_dependencies(ament_cmake)
 ament_export_dependencies(rclcpp)
 ament_export_include_directories(${INCLUDE_DIRS})
-ament_export_libraries(${PROJECT_NAME})
+ament_export_libraries(${PROJECT_NAME}_core)
 
 ament_package()
