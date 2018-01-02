@@ -29,8 +29,7 @@
 #ifndef SWRI_ROSCPP_TIMER_H_
 #define SWRI_ROSCPP_TIMER_H_
 
-#include <ros/node_handle.h>
-#include <diagnostic_updater/DiagnosticStatusWrapper.h>
+//#include <diagnostic_updater/DiagnosticStatusWrapper.h>
 #include <swri_roscpp/timer_impl.h>
 
 namespace swri
@@ -72,9 +71,9 @@ class Timer
   // wall durations because they are typically used as a rough profile
   // of how long the callback takes to execute which is independent of
   // simulated time.
-  ros::WallDuration meanDuration() const;
-  ros::WallDuration minDuration() const;
-  ros::WallDuration maxDuration() const;
+  rclcpp::Duration meanDuration() const;
+  rclcpp::Duration minDuration() const;
+  rclcpp::Duration maxDuration() const;
   double meanDurationMicroseconds() const;
   double minDurationMicroseconds() const;
   double maxDurationMicroseconds() const;
@@ -129,7 +128,7 @@ rclcpp::Duration Timer::desiredPeriod() const
 inline
 double Timer::desiredFrequency() const
 {
-  return 1.0 / desiredPeriod().toSec();
+  return 1.0 / (desiredPeriod().nanoseconds()/1000000000.0);
 }
 
 inline
@@ -151,7 +150,7 @@ double Timer::meanFrequencyHz() const
 }
 
 inline
-ros::Duration Timer::meanPeriod() const
+rclcpp::Duration Timer::meanPeriod() const
 {
   return impl_->meanPeriod();
 }
@@ -187,19 +186,19 @@ double Timer::maxPeriodMilliseconds() const
 }
 
 inline
-ros::WallDuration Timer::meanDuration() const
+rclcpp::Duration Timer::meanDuration() const
 {
   return impl_->meanDuration();
 }
 
 inline
-ros::WallDuration Timer::minDuration() const
+rclcpp::Duration Timer::minDuration() const
 {
   return impl_->minDuration();
 }
 
 inline
-ros::WallDuration Timer::maxDuration() const
+rclcpp::Duration Timer::maxDuration() const
 {
   return impl_->maxDuration();
 }
@@ -207,19 +206,19 @@ ros::WallDuration Timer::maxDuration() const
 inline
 double Timer::meanDurationMicroseconds() const
 {
-  return impl_->meanDuration().toNSec() / 1000.0;
+  return impl_->meanDuration().nanoseconds() / 1000.0;
 }
 
 inline
 double Timer::minDurationMicroseconds() const
 {
-  return impl_->minDuration().toNSec() / 1000.0;
+  return impl_->minDuration().nanoseconds() / 1000.0;
 }
 
 inline
 double Timer::maxDurationMicroseconds() const
 {
-  return impl_->maxDuration().toNSec() / 1000.0;
+  return impl_->maxDuration().nanoseconds() / 1000.0;
 }
 
 

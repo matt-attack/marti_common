@@ -53,7 +53,7 @@ set(LIBS ${gps_common_LIBRARIES} ${swri_math_util_LIBRARIES}
   ${ament_cmake_LIBRARIES} ${geometry_msgs_LIBRARIES})
 
 find_package(OpenCV REQUIRED core highgui imgproc video)
-find_package(Boost REQUIRED)
+find_package(Boost REQUIRED filesystem)
 
 #generate_dynamic_reconfigure_options(cfg/DynamicPublisher.cfg)
 
@@ -112,7 +112,8 @@ install(DIRECTORY include/${PROJECT_NAME}/
   FILES_MATCHING
   PATTERN "*.h")
 
-install(TARGETS ${PROJECT_NAME} 
+install(TARGETS 
+  ${PROJECT_NAME} 
   #${PROJECT_NAME}_nodelets #lat_lon_tf_echo
   RUNTIME
   DESTINATION lib/${PROJECT_NAME}

@@ -30,6 +30,7 @@
 #define SWRI_ROSCPP_PUBLISHER_H_
 
 #include <rclcpp/node.hpp>
+#include <swri_roscpp/logging.h>
 
 namespace swri
 {

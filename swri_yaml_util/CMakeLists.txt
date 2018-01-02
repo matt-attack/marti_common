@@ -60,6 +60,6 @@ install(TARGETS ${PROJECT_NAME}
 
 ament_export_dependencies(ament_cmake)
 ament_export_include_directories(${INCLUDE_DIRS})
-ament_export_libraries(${PROJECT_NAME} ${LIBS})
+ament_export_libraries(${PROJECT_NAME} ${LIBS} ${YamlCpp_LIBRARIES})
 
 ament_package()
