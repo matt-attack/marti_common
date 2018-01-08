@@ -73,7 +73,7 @@ class Subscriber
 
   // Using class method callback.
   template<class M , class T >
-  Subscriber(std::shared_ptr<rclcpp::Node> nh,
+  Subscriber(swri::Node* nh,
              const std::string &topic,
              uint32_t queue_size,
              void(T::*fp)(const std::shared_ptr< M > ),
@@ -82,11 +82,11 @@ class Subscriber
 
   // Using a std function callback.
   template<class M>
-  Subscriber(std::shared_ptr<rclcpp::Node> nh,
+  Subscriber(swri::Node* nh,
              const std::string &topic,
              uint32_t queue_size,
              const std::function<void(const std::shared_ptr<M> )> &callback,
-             const rmw_qos_profile_t& transport_hints= rmw_qos_profile_default);
+             const rmw_qos_profile_t& transport_hints = rmw_qos_profile_default);
              //const ros::TransportHints &transport_hints=ros::TransportHints());
 
   // This is an alternate interface that stores a received message in
@@ -95,10 +95,10 @@ class Subscriber
   // for usage later and avoids having to write a trivial callback
   // function.
   template<class M>
-  Subscriber(std::shared_ptr<rclcpp::Node> nh,
+  Subscriber(swri::Node* nh,
              const std::string &topic,
              std::shared_ptr< M > *dest,
-             const rmw_qos_profile_t& transport_hints= rmw_qos_profile_default);
+             const rmw_qos_profile_t& transport_hints = rmw_qos_profile_default);
   
   Subscriber& operator=(const Subscriber &other);
 
@@ -123,14 +123,14 @@ class Subscriber
   // don't have headers).
   rclcpp::Duration age(const rclcpp::Time &now=rclcpp::Time(0,0,RCL_ROS_TIME)) const;
   double ageSeconds(const rclcpp::Time &now=rclcpp::Time(0,0,RCL_ROS_TIME)) const;
-  /*double ageMilliseconds(const ros::Time &now=ros::TIME_MIN) const;
+  double ageMilliseconds(const rclcpp::Time &now=rclcpp::Time(0,0,RCL_ROS_TIME)) const;
 
   // Average latency (time difference between the time stamp and when
   // the message is received). These will be useless for message types
   // that do not have a header.
-  ros::Duration meanLatency() const;
-  ros::Duration minLatency() const;
-  ros::Duration maxLatency() const;
+  rclcpp::Duration meanLatency() const;
+  rclcpp::Duration minLatency() const;
+  rclcpp::Duration maxLatency() const;
   double meanLatencyMicroseconds() const;
   double minLatencyMicroseconds() const;
   double maxLatencyMicroseconds() const;
@@ -138,12 +138,12 @@ class Subscriber
   // Frequency/Period in terms of when the message was received (not
   // the header stamp).
   double meanFrequencyHz() const;
-  ros::Duration meanPeriod() const;
-  ros::Duration minPeriod() const;
-  ros::Duration maxPeriod() const;
+  rclcpp::Duration meanPeriod() const;
+  rclcpp::Duration minPeriod() const;
+  rclcpp::Duration maxPeriod() const;
   double meanPeriodMilliseconds() const;
   double minPeriodMilliseconds() const;
-  double maxPeriodMilliseconds() const;*/
+  double maxPeriodMilliseconds() const;
 
   // Provide a negative value to disable the timeout (default is -1).
   void setTimeout(const rclcpp::Duration &time_out);
@@ -156,7 +156,7 @@ class Subscriber
   // Block/unblock timeouts from occuring.  This allows you to
   // temporarily block timeouts (for example, if a message is not
   // expected in a particular mode).  Returns the current state
-  /*bool blockTimeouts(bool block);
+  bool blockTimeouts(bool block);
 
   // Return true if the subscriber is currently blocking timeouts from
   // occurring.
@@ -165,8 +165,8 @@ class Subscriber
   // Determine if the timeout is currently enabled.
   bool timeoutEnabled() const;
   // Read the current timeout setting.
-  ros::Duration timeout() const;
-  double timeoutMilliseconds() const;*/
+  rclcpp::Duration timeout() const;
+  double timeoutMilliseconds() const;
 
   // Determine if the topic is in a timed out state.
   bool inTimeout();
@@ -212,7 +212,7 @@ Subscriber::Subscriber()
 
 template<class M , class T >
 inline
-Subscriber::Subscriber(std::shared_ptr<rclcpp::Node> nh,
+Subscriber::Subscriber(swri::Node* nh,
                        const std::string &topic,
                        uint32_t queue_size,
                        void(T::*fp)(const std::shared_ptr< M  > ),
@@ -226,7 +226,7 @@ Subscriber::Subscriber(std::shared_ptr<rclcpp::Node> nh,
 
 template<class M>
 inline
-Subscriber::Subscriber(std::shared_ptr<rclcpp::Node> nh,
+Subscriber::Subscriber(swri::Node* nh,
                        const std::string &topic,
                        uint32_t queue_size,
                        const std::function<void(const std::shared_ptr<M > )> &callback,
@@ -239,7 +239,7 @@ Subscriber::Subscriber(std::shared_ptr<rclcpp::Node> nh,
 
 template<class M>
 inline
-Subscriber::Subscriber(std::shared_ptr<rclcpp::Node> nh,
+Subscriber::Subscriber(swri::Node* nh,
                        const std::string &topic,
                        std::shared_ptr< M > *dest,
                        const rmw_qos_profile_t& transport_hints)
@@ -264,13 +264,13 @@ Subscriber& Subscriber::operator=(const Subscriber &other)
   // around a lot, but I've never seen that kind of use case in any
   // ROS code.
 
-  /*ros::Duration new_timeout = other.impl_->timeout();
+  rclcpp::Duration new_timeout = other.impl_->timeout();
   if (impl_->timeoutEnabled() && !other.impl_->timeoutEnabled()) {
     new_timeout = impl_->timeout();
-  }*/
+  }
 
   impl_ = other.impl_;
-  //impl_->setTimeout(new_timeout);
+  impl_->setTimeout(new_timeout);
 
   return *this;
 }
@@ -318,29 +318,29 @@ rclcpp::Duration Subscriber::age(const rclcpp::Time &now) const
 inline
 double Subscriber::ageSeconds(const rclcpp::Time &now) const
 {
-  return ((double)age(now).nanoseconds())/1000000000.0;
-}
-
-/*inline
-double Subscriber::ageMilliseconds(const ros::Time &now) const
-{
-  return age(now).toNSec() / 1000000.0;
+  return ((double)age(now).nanoseconds()) / 1000000000.0;
 }
 
 inline
-ros::Duration Subscriber::meanLatency() const
+double Subscriber::ageMilliseconds(const rclcpp::Time &now) const
+{
+  return ((double)age(now).nanoseconds()) / 1000000.0;
+}
+
+inline
+rclcpp::Duration Subscriber::meanLatency() const
 {
   return impl_->meanLatency();
 }
 
 inline
-ros::Duration Subscriber::minLatency() const
+rclcpp::Duration Subscriber::minLatency() const
 {
   return impl_->minLatency();
 }
 
 inline
-ros::Duration Subscriber::maxLatency() const
+rclcpp::Duration Subscriber::maxLatency() const
 {
   return impl_->maxLatency();
 }
@@ -348,23 +348,23 @@ ros::Duration Subscriber::maxLatency() const
 inline
 double Subscriber::meanLatencyMicroseconds() const
 {
-  return meanLatency().toNSec() / 1000.0;
+  return ((double)meanLatency().nanoseconds()) / 1000.0;
 }
 
 inline
 double Subscriber::minLatencyMicroseconds() const
 {
-  return minLatency().toNSec() / 1000.0;
+  return ((double)minLatency().nanoseconds()) / 1000.0;
 }
 
 inline
 double Subscriber::maxLatencyMicroseconds() const
 {
-  return maxLatency().toNSec() / 1000.0;
+  return ((double)maxLatency().nanoseconds()) / 1000.0;
 }
 
 inline
-ros::Duration Subscriber::meanPeriod() const
+rclcpp::Duration Subscriber::meanPeriod() const
 {
   return impl_->meanPeriod();
 }
@@ -376,13 +376,13 @@ double Subscriber::meanFrequencyHz() const
 }
 
 inline
-ros::Duration Subscriber::minPeriod() const
+rclcpp::Duration Subscriber::minPeriod() const
 {
   return impl_->minPeriod();
 }
 
 inline
-ros::Duration Subscriber::maxPeriod() const
+rclcpp::Duration Subscriber::maxPeriod() const
 {
   return impl_->maxPeriod();
 }
@@ -390,20 +390,20 @@ ros::Duration Subscriber::maxPeriod() const
 inline
 double Subscriber::meanPeriodMilliseconds() const
 {
-  return meanPeriod().toNSec() / 1000000.0;
+  return ((double)meanPeriod().nanoseconds()) / 1000000.0;
 }
 
 inline
 double Subscriber::minPeriodMilliseconds() const
 {
-  return minPeriod().toNSec() / 1000000.0;
+  return ((double)minPeriod().nanoseconds()) / 1000000.0;
 }
 
 inline
 double Subscriber::maxPeriodMilliseconds() const
 {
-  return maxPeriod().toNSec() / 1000000.0;
-}*/
+  return ((double)maxPeriod().nanoseconds()) / 1000000.0;
+}
 
 inline
 void Subscriber::setTimeout(const rclcpp::Duration &time_out)
@@ -428,7 +428,7 @@ void Subscriber::timeoutParam(
   setTimeout(timeout);
 }
 
-/*inline
+inline
 bool Subscriber::blockTimeouts(bool block)
 {
   return impl_->blockTimeouts(block);
@@ -441,7 +441,7 @@ bool Subscriber::timeoutsBlocked() const
 }
 
 inline
-ros::Duration Subscriber::timeout() const
+rclcpp::Duration Subscriber::timeout() const
 {
   return impl_->timeout();
 }
@@ -455,8 +455,8 @@ bool Subscriber::timeoutEnabled() const
 inline
 double Subscriber::timeoutMilliseconds() const
 {
-  return impl_->timeout().toNSec() / 1.0e6;
-}*/
+  return impl_->timeout().nanoseconds() / 1.0e6;
+}
 
 inline
 bool Subscriber::inTimeout()
@@ -476,7 +476,7 @@ void Subscriber::appendDiagnostics(diagnostic_updater::DiagnosticStatusWrapper &
                                    int flags)
 {
   // Alias a type for easier access to DiagnosticStatus enumerations.
-  typedef diagnostic_msgs::DiagnosticStatus DS;
+  typedef diagnostic_msgs::msg::DiagnosticStatus DS;
 
   // We are considering no messages seen as a warning because this is
   // a normal condition during start up, but should be resolved once

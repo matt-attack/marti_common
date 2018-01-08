@@ -21,7 +21,7 @@ using namespace std::chrono;
 void print_usage()
 {
   printf("Usage for nodelet:\n");
-  printf("nodelet package_name plugin_name [--delay delay_ms] [-h]\n");
+  printf("nodelet package_name plugin_name manager_name [--delay delay_ms] [-h]\n");
   printf("options:\n");
   printf("-h : Print this help function.\n");
   printf("--delay delay_ms: Delay in ms before attempting request. Defaults to 0.\n");

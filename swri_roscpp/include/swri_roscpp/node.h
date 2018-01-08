@@ -29,8 +29,11 @@
 #ifndef SWRI_ROSCPP_NODE_H_
 #define SWRI_ROSCPP_NODE_H_
 
+#include <rclcpp/rclcpp.hpp>
 #include <rclcpp/node.hpp>
 #include <swri_roscpp/logging.h>
+
+#include <map>
 
 namespace swri
 {
@@ -38,6 +41,9 @@ class Node
 {
   std::string node_name_;
   std::string node_namespace_;
+ 
+  std::shared_ptr<rclcpp::ParameterService> parameter_service_;
+  std::map<std::string, std::string> remappings_;
  public:
   std::shared_ptr<rclcpp::Node> nh_;
 
@@ -47,88 +53,25 @@ class Node
 
   }
 
-  void Initialize(int argc, char** argv, bool is_nodelet = false)
+  std::string ResolveName(const std::string& name) const
   {
-    for (int i = 0; i < argc; i++)
+    auto iter = remappings_.find(name);
+    if (iter != remappings_.end())
     {
-      std::string val = argv[i];
-      if (val.find(":=") == -1 || val.length() < 4)
-        continue;
-
-      int split = val.find(":=");
-      std::string name = val.substr(0, split);
-      std::string value = val.substr(split+2);
-      //ROS_INFO("Got param '%s' with value '%s'", name.c_str(), value.c_str());
-
-      // Check for special case names
-      if (name == "__NAME__")
-      {
-        node_name_ = value;
-        continue;
-      }
-      if (name == "__NAMESPACE__")
-      {
-        node_namespace_ = value;
-        continue;
-      }
+      return iter->second; 
     }
-
-    nh_ = std::make_shared<rclcpp::Node>(node_name_, node_namespace_, is_nodelet);
-    swri::setup_logging(nh_);
-    parse_arguments(argc, argv);
-
-    onInit();
+    return name;
   }
+
+  void Initialize(int argc, char** argv, bool is_nodelet = false);
 
  private:
-  void parse_arguments(int argc, char** argv)
-  {
-    for (int i = 0; i < argc; i++)
-    {
-      std::string val = argv[i];
-      if (val.find(":=") == -1 || val.length() < 4)
-        continue;
+  void parse_arguments(int argc, char** argv);
 
-      int split = val.find(":=");
-      std::string name = val.substr(0, split);
-      std::string value = val.substr(split+2);
-      ROS_INFO("Got param '%s' with value '%s'", name.c_str(), value.c_str());
-
-      // Check for special case names
-      if (name == "__NAME__" || name == "__NAMESPACE__")
-      {
-        //node_name_ = name;
-        continue;
-      }
-
-      // Check which type it is
-      if (value == "true")
-      {
-        ROS_INFO("Was bool");
-        nh_->set_parameter_if_not_set(name, true);
-      }
-      else if (value == "false")
-      {
-        ROS_INFO("Was bool");
-        nh_->set_parameter_if_not_set(name, false);
-      }
-      else if (value[0] == '-' || (value[0] >= '0' && value[0] <= '9'))
-      {
-        ROS_INFO("Was number");
-        nh_->set_parameter_if_not_set(name, std::atof(value.c_str()));
-      }
-      else
-      {
-        ROS_INFO("Was string");
-        nh_->set_parameter_if_not_set(name, value);
-      }
-    }
-  }
-
-  void apply_params();
+  void parse_remap(const std::string& val);
 
   virtual void onInit() = 0;
-};  // class Timer
+};  // class Node
 
 }  // namespace swri
 #endif  // SWRI_ROSCPP_NODE_H_

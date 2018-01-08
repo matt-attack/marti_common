@@ -31,22 +31,45 @@
 
 #include <rclcpp/node.hpp>
 #include <swri_roscpp/logging.h>
+#include <swri_roscpp/node.h>
 
 namespace swri
 {
 template<typename M>
 std::shared_ptr<rclcpp::Publisher<M>> advertise(
-  std::shared_ptr<rclcpp::Node> &nh,
+  const swri::Node* nh,
   const std::string name,
   uint32_t queue_size,
   bool latched=false)
 {
-  const std::string resolved_name = name;//nh.resolveName(name);
-  ROS_INFO("Publishing [%s] to '%s'.",
+  
+  const std::string resolved_name = nh->ResolveName(name);
+  if (name == resolved_name)
+  {
+    std::string ns = nh->nh_->get_namespace();
+    std::string real_name = "";
+    if (ns != "/")
+    {
+      real_name +="/";
+    }
+    real_name += resolved_name;
+    ROS_INFO("Publishing [%s] to '%s'.",
+           name.c_str(),
+           real_name.c_str());
+  }
+  else
+  {
+    ROS_INFO("Publishing [%s] to '%s'.",
            name.c_str(),
            resolved_name.c_str());
-  //TODO NO LATCHED ANYMORE
-  return nh->create_publisher<M>(name, queue_size);
+  }
+  
+  rmw_qos_profile_t profile = rmw_qos_profile_default;
+  if (latched)
+  {
+    profile.durability = RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL;
+  }
+  return nh->nh_->create_publisher<M>(resolved_name, queue_size);
 }    
 }  // namespace swri
 #endif  // SWRI_ROSCPP_PUBLISHER_H_

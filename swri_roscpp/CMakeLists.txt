@@ -97,6 +97,7 @@ target_link_libraries(nodelet_manager
 
 add_library(${PROJECT_NAME}_core SHARED
   src/logging.cpp
+  src/node.cpp
 )
 ament_target_dependencies(${PROJECT_NAME}_core
   rclcpp
