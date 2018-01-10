@@ -18,12 +18,12 @@ namespace swri
       std::string value = val.substr(split+2);
 
       // Check for special case names
-      if (name == "__NAME__")
+      if (name == "__name")
       {
         node_name_ = value;
         continue;
       }
-      if (name == "__NAMESPACE__")
+      if (name == "__namespace")
       {
         node_namespace_ = value;
         continue;
@@ -66,10 +66,10 @@ namespace swri
       int split = val.find(":=");
       std::string name = val.substr(0, split);
       std::string value = val.substr(split+2);
-      ROS_INFO("Got param '%s' with value '%s'", name.c_str(), value.c_str());
+      ROS_INFO("Set param '%s' with value '%s'", name.c_str(), value.c_str());
 
       // Check for special case names
-      if (name == "__NAME__" || name == "__NAMESPACE__")
+      if (name == "__name" || name == "__namespace")
       {
         //node_name_ = name;
         continue;
@@ -78,22 +78,30 @@ namespace swri
       // Check which type it is
       if (value == "true")
       {
-        ROS_INFO("Was bool");
+        //ROS_INFO("Was bool");
         nh_->set_parameter_if_not_set(name, true);
       }
       else if (value == "false")
       {
-        ROS_INFO("Was bool");
+        //ROS_INFO("Was bool");
         nh_->set_parameter_if_not_set(name, false);
       }
       else if (value[0] == '-' || (value[0] >= '0' && value[0] <= '9'))
       {
-        ROS_INFO("Was number");
-        nh_->set_parameter_if_not_set(name, std::atof(value.c_str()));
+        if (value.find('.') == std::string::npos)//integer
+        {
+          //ROS_INFO("Was int");
+          nh_->set_parameter_if_not_set(name, std::atoi(value.c_str()));
+        }
+        else
+        {
+          //ROS_INFO("Was float");
+          nh_->set_parameter_if_not_set(name, std::atof(value.c_str()));
+        }
       }
       else
       {
-        ROS_INFO("Was string");
+        //ROS_INFO("Was string");
         nh_->set_parameter_if_not_set(name, value);
       }
     }

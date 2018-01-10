@@ -34,7 +34,7 @@
 
 #define ROS_ERROR(...) RCLCPP_ERROR(swri::get_logger(), __VA_ARGS__)
 #define ROS_WARN(...) RCLCPP_WARN(swri::get_logger(), __VA_ARGS__)
-#define ROS_INFO(...) RCLCPP_WARN(swri::get_logger(), __VA_ARGS__)
+#define ROS_INFO(...) RCLCPP_INFO(swri::get_logger(), __VA_ARGS__)
 #define ROS_DEBUG(...) RCLCPP_DEBUG(swri::get_logger(), __VA_ARGS__)
 #define ROS_FATAL(...) RCLCPP_FATAL(swri::get_logger(), __VA_ARGS__)
 

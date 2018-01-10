@@ -110,7 +110,14 @@ namespace swri
   {
     std::string resolved_name = name;//nh.resolveName(name);
     _used_params.insert(resolved_name);
-    nh->get_parameter_or(name, variable, default_value);
+    try
+    {
+      nh->get_parameter_or(name, variable, default_value);
+    }
+    catch(...)
+    {
+      ROS_ERROR("Parameter %s has wrong type, expected int", name.c_str());
+    }
     ROS_INFO("Read parameter %s = %d", name.c_str(), variable);
   }
 
@@ -122,7 +129,14 @@ namespace swri
   {
     std::string resolved_name = name;//nh.resolveName(name);
     _used_params.insert(resolved_name);
-    nh->get_parameter_or(name, variable, default_value);
+    try
+    {
+      nh->get_parameter_or(name, variable, default_value);
+    }
+    catch(...)
+    {
+      ROS_ERROR("Parameter %s has wrong type, expected double", name.c_str());
+    }
     ROS_INFO("Read parameter %s = %lf", name.c_str(), variable);
   }
 
@@ -134,7 +148,14 @@ namespace swri
   {
     double dbl_value;
     double dbl_default = default_value;
-    nh->get_parameter_or(name, dbl_value, dbl_default);
+    try
+    {
+      nh->get_parameter_or(name, dbl_value, dbl_default);
+    }
+    catch(...)
+    {
+      ROS_ERROR("Parameter %s has wrong type, expected double/float", name.c_str());
+    }
     variable = dbl_value;
     ROS_INFO("Read parameter %s = %f", name.c_str(), variable);
   }
@@ -159,7 +180,14 @@ namespace swri
   {
     std::string resolved_name = name;//nh.resolveName(name);
     _used_params.insert(resolved_name);
-    nh->get_parameter_or(name, variable, default_value);
+    try
+    {
+      nh->get_parameter_or(name, variable, default_value);
+    }
+    catch(...)
+    {
+      ROS_ERROR("Parameter %s has wrong type, expected bool", name.c_str());
+    }
     ROS_INFO("Read parameter %s = %s", name.c_str(), variable ? "true" : "false");
   }
 
