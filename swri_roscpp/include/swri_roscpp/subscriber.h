@@ -33,6 +33,7 @@
 #include <rclcpp/rclcpp.hpp>
 //#include <diagnostic_updater/DiagnosticStatusWrapper.h>
 
+#include <swri_roscpp/node.h>
 #include <swri_roscpp/parameters.h>
 #include <swri_roscpp/subscriber_impl.h>
 

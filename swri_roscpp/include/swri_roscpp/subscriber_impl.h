@@ -33,6 +33,7 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <swri_roscpp/logging.h>
+#include <swri_roscpp/node.h>
 
 namespace swri
 {

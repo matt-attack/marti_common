@@ -18,12 +18,12 @@ namespace swri
       std::string value = val.substr(split+2);
 
       // Check for special case names
-      if (name == "__name")
+      if (name == "__node")
       {
         node_name_ = value;
         continue;
       }
-      if (name == "__namespace")
+      if (name == "__ns")
       {
         node_namespace_ = value;
         continue;
@@ -69,7 +69,7 @@ namespace swri
       ROS_INFO("Set param '%s' with value '%s'", name.c_str(), value.c_str());
 
       // Check for special case names
-      if (name == "__name" || name == "__namespace")
+      if (name == "__node" || name == "__ns")
       {
         //node_name_ = name;
         continue;

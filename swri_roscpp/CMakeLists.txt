@@ -18,6 +18,7 @@ find_package(class_loader REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rcutils REQUIRED)
 find_package(rosidl_cmake REQUIRED)
+find_package(rosgraph_msgs REQUIRED)
 
 set(INCLUDE_DIRS include ${${BUILD_DEPS}_INCLUDE_DIRS}
   ${ament_cmake_INCLUDE_DIRS})
@@ -100,7 +101,9 @@ add_library(${PROJECT_NAME}_core SHARED
   src/node.cpp
 )
 ament_target_dependencies(${PROJECT_NAME}_core
+  ${PROJECT_NAME}
   rclcpp
+  rosgraph_msgs
 )
 target_link_libraries(${PROJECT_NAME}_core ${LIBS})
 
