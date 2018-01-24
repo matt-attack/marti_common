@@ -41,7 +41,7 @@ double toSec(const rclcpp::Duration& duration)
   return static_cast<double>(duration.nanoseconds())/1000000000.0;
 }
 
-const rclcpp::Time TIME_MAX(std::numeric_limits<uint32_t>::max(), 999999999);
+const rclcpp::Time TIME_MAX(std::numeric_limits<int32_t>::max(), 999999999);
 const rclcpp::Time TIME_MIN(0, 1);
 
 }  // namespace swri
