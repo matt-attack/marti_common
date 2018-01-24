@@ -29,7 +29,7 @@
 #ifndef SWRI_ROSCPP_TIMER_H_
 #define SWRI_ROSCPP_TIMER_H_
 
-//#include <diagnostic_updater/DiagnosticStatusWrapper.h>
+#include <diagnostic_updater/DiagnosticStatusWrapper.h>
 #include <swri_roscpp/timer_impl.h>
 
 namespace swri
@@ -87,9 +87,9 @@ class Timer
     DIAG_MOST     = DIAG_ALL ^ DIAG_COUNT
   };
 
-  //void appendDiagnostics(diagnostic_updater::DiagnosticStatusWrapper &status,
-  //                       const std::string &name,
-  //                       const int flags);
+  void appendDiagnostics(diagnostic_updater::DiagnosticStatusWrapper &status,
+                         const std::string &name,
+                         const int flags);
 };  // class Timer
 
 
@@ -223,7 +223,7 @@ double Timer::maxDurationMicroseconds() const
 
 
 
-/*inline
+inline
 void Timer::appendDiagnostics(diagnostic_updater::DiagnosticStatusWrapper &status,
                               const std::string &name,
                               int flags)
@@ -267,6 +267,6 @@ void Timer::appendDiagnostics(diagnostic_updater::DiagnosticStatusWrapper &statu
                   maxDurationMicroseconds());
     }
   }
-}*/
+}
 }  // namespace swri
 #endif  // SWRI_ROSCPP_TIMER_H_

@@ -65,6 +65,12 @@ class Node
 
   void Initialize(int argc, char** argv, bool is_nodelet = false);
 
+  template< class CallbackT>
+  rclcpp::TimerBase::SharedPtr create_wall_timer(double rate, CallbackT callback)
+  {
+    return nh_->create_wall_timer(std::chrono::duration<int64_t, std::micro>((int64_t)(1000000.0/rate)), callback);
+  }
+
  private:
   void parse_arguments(int argc, char** argv);
 

@@ -26,43 +26,22 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // *****************************************************************************
-#ifndef SWRI_ROSCPP_LOGGING_H_
-#define SWRI_ROSCPP_LOGGING_H_
 
-#include <rclcpp/node.hpp>
-#include <rclcpp/logging.hpp>
-
-#define ROS_ERROR(...) RCLCPP_ERROR(swri::get_logger(), __VA_ARGS__)
-#define ROS_WARN(...) RCLCPP_WARN(swri::get_logger(), __VA_ARGS__)
-#define ROS_INFO(...) RCLCPP_INFO(swri::get_logger(), __VA_ARGS__)
-#define ROS_DEBUG(...) RCLCPP_DEBUG(swri::get_logger(), __VA_ARGS__)
-#define ROS_FATAL(...) RCLCPP_FATAL(swri::get_logger(), __VA_ARGS__)
-
-#define ROS_ERROR_THROTTLE(rate, ...) RCLCPP_ERROR(swri::get_logger(), __VA_ARGS__)
-#define ROS_WARN_THROTTLE(rate, ...) RCLCPP_WARN(swri::get_logger(), __VA_ARGS__)
-#define ROS_INFO_THROTTLE(rate, ...) RCLCPP_INFO(swri::get_logger(), __VA_ARGS__)
-#define ROS_DEBUG_THROTTLE(rate, ...) RCLCPP_INFO(swri::get_logger(), __VA_ARGS__)
-
-#if NDEBUG
-#define ROS_ASSERT(cond) \
-  do { \
-    if (!(cond)) { \
-      ROS_FATAL("ASSERTION FAILED\n\tfile = %s\n\tline = %d\n\tcond = %s\n", __FILE__, __LINE__, #cond); \
-      ROS_ISSUE_BREAK() \
-    } \
-  } while (false)
-#else
-#define ROS_ASSERT(cond)
-#endif
+#include <swri_roscpp/time.h>
 
 namespace swri
 {
-  // The node handle used for all of the loggers
-  extern std::shared_ptr<rclcpp::Node> _node_handle;
+double toSec(const rclcpp::Time& time)
+{
+  return static_cast<double>(time.nanoseconds())/1000000000.0;
+}
 
-  /* Call this once in every exectuable with one of the nodes to enable easy logging */
-  void setup_logging(std::shared_ptr<rclcpp::Node> ptr);
+double toSec(const rclcpp::Duration& duration)
+{
+  return static_cast<double>(duration.nanoseconds())/1000000000.0;
+}
 
-  rclcpp::Logger get_logger();
+const rclcpp::Time TIME_MAX(std::numeric_limits<uint32_t>::max(), 999999999);
+const rclcpp::Time TIME_MIN(0, 1);
+
 }  // namespace swri
-#endif  // SWRI_ROSCPP_LOGGING_H_

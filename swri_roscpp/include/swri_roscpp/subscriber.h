@@ -31,7 +31,7 @@
 
 
 #include <rclcpp/rclcpp.hpp>
-//#include <diagnostic_updater/DiagnosticStatusWrapper.h>
+#include <diagnostic_updater/DiagnosticStatusWrapper.h>
 
 #include <swri_roscpp/node.h>
 #include <swri_roscpp/parameters.h>
@@ -198,9 +198,9 @@ class Subscriber
   // The flags parameter determines which values are added to the
   // status' key/value pairs.  This should be a bitwise combination of
   // the values defined in DIAGNOSTIC_FLAGS.
-  //void appendDiagnostics(diagnostic_updater::DiagnosticStatusWrapper &status,
-  //                       const std::string &name,
-  //                       const int flags);
+  void appendDiagnostics(diagnostic_updater::DiagnosticStatusWrapper &status,
+                         const std::string &name,
+                         const int flags);
 };  // class Subscriber
 
 inline
@@ -471,7 +471,7 @@ int Subscriber::timeoutCount()
   return impl_->timeoutCount();
 }
 
-/*inline
+inline
 void Subscriber::appendDiagnostics(diagnostic_updater::DiagnosticStatusWrapper &status,
                                    const std::string &name,
                                    int flags)
@@ -545,6 +545,6 @@ void Subscriber::appendDiagnostics(diagnostic_updater::DiagnosticStatusWrapper &
         maxPeriodMilliseconds());
     }
   }
-}*/
+}
 }  // namespace swri
 #endif  // SWRI_ROSCPP_SUBSCRIBER_H_

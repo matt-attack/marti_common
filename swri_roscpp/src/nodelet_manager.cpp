@@ -100,7 +100,7 @@ int main(int argc, char * argv[])
       }
       catch (ament_index_cpp::PackageNotFoundError err)
       {
-        RCLCPP_ERROR(node->get_logger(), "Could not find requested package")
+        RCLCPP_ERROR(node->get_logger(), "Could not find requested package '%s'", request->package_name.c_str())
         response->success = false;
         return;
       }
