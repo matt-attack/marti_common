@@ -37,7 +37,7 @@ namespace swri
 {
 template<typename M>
 std::shared_ptr<rclcpp::Publisher<M>> advertise(
-  const swri::Node* nh,
+  swri::Node* nh,
   const std::string name,
   uint32_t queue_size,
   bool latched=false)
@@ -69,7 +69,8 @@ std::shared_ptr<rclcpp::Publisher<M>> advertise(
   {
     profile.durability = RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL;
   }
-  return nh->nh_->create_publisher<M>(resolved_name, queue_size);
+  profile.depth = queue_size;
+  return nh->create_publisher<M>(resolved_name, profile);
 }    
 }  // namespace swri
 #endif  // SWRI_ROSCPP_PUBLISHER_H_

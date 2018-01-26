@@ -4,7 +4,6 @@
 
 namespace swri
 {
-
   void Node::Initialize(int argc, char** argv, bool is_nodelet)
   {
     for (int i = 0; i < argc; i++)
@@ -35,6 +34,56 @@ namespace swri
 
     // host a parameter service for each node
     parameter_service_ = std::make_shared<rclcpp::ParameterService>(nh_);
+
+    info_service_ = nh_->create_service<swri_roscpp::srv::Interrogate>(
+    node_namespace_+"/"+node_name_+"/info",
+    [this](
+      const std::shared_ptr<rmw_request_id_t>,
+      const std::shared_ptr<swri_roscpp::srv::Interrogate::Request> request,
+      std::shared_ptr<swri_roscpp::srv::Interrogate::Response> response)
+    {
+      for (auto cb: nh_->get_callback_groups())
+      {
+        auto cbh = cb.lock();
+        if (!cbh)
+        {
+          continue;
+        }
+
+        for (auto sub : cbh->get_subscription_ptrs())
+        {
+          auto subp = sub.lock();
+          if (subp)
+          {
+            response->subscriptions.push_back(subp->get_topic_name());
+            std::string res = typeid(*subp).name();//this->topic_type_map_[pt->get_topic_name()];
+            //remove the Subscription part
+            res = res.substr(res.find("tion")+4, res.length());
+            response->subscription_types.push_back(res);
+          }
+        }
+      }
+
+      /*for (auto ii: subs_)
+      {
+        if (auto pt = ii.lock())
+        {
+          response->subscriptions.push_back(pt->get_topic_name());
+          auto res = this->topic_type_map_[pt->get_topic_name()];
+          response->subscription_types.push_back(res);
+        }
+      }*/
+
+      for (auto ii: pubs_)
+      {
+        if (auto pt = ii.lock())
+        {
+          response->publications.push_back(pt->get_topic_name());
+          auto res = this->topic_type_map_[pt->get_topic_name()];
+          response->publication_types.push_back(res);
+        }
+      }
+    });
     //auto parameter_client = std::make_shared<rclcpp::AsyncParametersClient>(nh_);
 
     parse_arguments(argc, argv);

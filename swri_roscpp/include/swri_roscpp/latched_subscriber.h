@@ -2,7 +2,7 @@
 #define SWRI_ROSCPP_LATCHED_SUBSCRIBER_H_
 
 
-#include <ros/node_handle.h>
+#include <rclcpp/rclcpp.hpp>
 #include <diagnostic_updater/DiagnosticStatusWrapper.h>
 #include <swri_roscpp/subscriber.h>
 
@@ -28,13 +28,13 @@ class LatchedSubscriber : public Subscriber
   template <class M2>
   struct LatchedReceiver
   {
-    boost::shared_ptr<M2 const> msg_;    
-    void handleMessage(const boost::shared_ptr<M2 const> &msg) {
+    std::shared_ptr<M2 const> msg_;    
+    void handleMessage(const std::shared_ptr<M2> msg) {
       msg_ = msg;
     }    
   };  // struct LatchedReceiver
 
-  boost::shared_ptr<LatchedReceiver<M> > receiver_;
+  std::shared_ptr<LatchedReceiver<M> > receiver_;
   M empty_;
   
  public:
@@ -45,23 +45,23 @@ class LatchedSubscriber : public Subscriber
   // argument twice (once in your class declaration and at
   // construction).  See the initialize() method for a simpler
   // alternative.
-  LatchedSubscriber(ros::NodeHandle &nh,
-                    const std::string &topic,
-                    const ros::TransportHints &transport_hints=ros::TransportHints());
+  LatchedSubscriber(swri::Node* nh,
+                    const std::string &topic);//,
+                    //const ros::TransportHints &transport_hints=ros::TransportHints());
 
   // Creates a latched subscriber in place.  This is more convenient
   // because you don't have to provide the template argument a second
   // time.
-  void initialize(ros::NodeHandle &nh,
-                  const std::string &topic,
-                  const ros::TransportHints &transport_hints=ros::TransportHints());
+  void initialize(swri::Node* nh,
+                  const std::string &topic);//,
+                  //const ros::TransportHints &transport_hints=ros::TransportHints());
 
   LatchedSubscriber<M>& operator=(const LatchedSubscriber<M> &other);
 
   // Return the value of the most recent message.  This is guaranteed
   // to be non-NULL if the messageCount() is non-zero, otherwise it
   // may be null.
-  const boost::shared_ptr<M const>& data() const;
+  const std::shared_ptr<M const>& data() const;
   M const * operator->() const;
   
   void reset();  
@@ -72,30 +72,30 @@ LatchedSubscriber<M>::LatchedSubscriber()
 {
   // Setup an empty receiver so that we can assume receiver_ is
   // non-null and avoid a lot of unnecessary NULL checks.
-  receiver_ = boost::shared_ptr<LatchedReceiver<M> >(new LatchedReceiver<M>());
+  receiver_ = std::shared_ptr<LatchedReceiver<M> >(new LatchedReceiver<M>());
 }
 
 template<class M>
 LatchedSubscriber<M>::LatchedSubscriber(
-  ros::NodeHandle &nh,
-  const std::string &topic,
-  const ros::TransportHints &transport_hints)
+  swri::Node* nh,
+  const std::string &topic)//,
+//  const ros::TransportHints &transport_hints)
 {
   ROS_WARN("swri_roscpp::LatchedSubscriber has been deprecated.  See header for information.");
-  receiver_ = boost::shared_ptr<LatchedReceiver<M> >(new LatchedReceiver<M>());
+  receiver_ = std::shared_ptr<LatchedReceiver<M> >(new LatchedReceiver<M>());
   // It seems like there should be a better way to do this?
   Subscriber::operator=(
     Subscriber(nh, topic, 1,
-               &LatchedReceiver<M>::handleMessage, receiver_.get(), transport_hints));
+               &LatchedReceiver<M>::handleMessage, receiver_.get()));//, transport_hints));
 }
 
 template<class M>
 void LatchedSubscriber<M>::initialize(
-  ros::NodeHandle &nh,
-  const std::string &topic,
-  const ros::TransportHints &transport_hints)
+  swri::Node* nh,
+  const std::string &topic)//,
+//  const ros::TransportHints &transport_hints)
 {
-  *this = LatchedSubscriber<M>(nh, topic, transport_hints);
+  *this = LatchedSubscriber<M>(nh, topic);//, transport_hints);
 }
 
 
@@ -108,7 +108,7 @@ LatchedSubscriber<M>& LatchedSubscriber<M>::operator=(const LatchedSubscriber<M>
 }
     
 template<class M>
-const boost::shared_ptr<M const>& LatchedSubscriber<M>::data() const
+const std::shared_ptr<M const>& LatchedSubscriber<M>::data() const
 {
   return receiver_->msg_;
 }

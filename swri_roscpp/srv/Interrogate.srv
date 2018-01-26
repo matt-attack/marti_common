@@ -1,0 +1,9 @@
+
+---
+string name
+
+string[] subscriptions
+string[] subscription_types
+string[] publications
+string[] publication_types
+string[] services

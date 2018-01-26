@@ -320,7 +320,7 @@ class TypedSubscriberImpl : public SubscriberImpl
     callback_ = fp;
     obj_ = obj;
     //transport_hints.depth = queue_size;
-    sub_ = nh->nh_->create_subscription<M>(mapped_topic_,
+    sub_ = nh->create_subscription<M>(mapped_topic_,
                         std::bind(&TypedSubscriberImpl::handleMessage,
                         this, std::placeholders::_1),
                         transport_hints);
@@ -374,7 +374,7 @@ class BindSubscriberImpl : public SubscriberImpl
     callback_ = callback;
 
     transport_hints.depth = queue_size;
-    sub_ = nh->nh_->create_subscription(mapped_topic_,
+    sub_ = nh->create_subscription(mapped_topic_,
                         std::bind(&BindSubscriberImpl::handleMessage,
                         this, std::placeholders::_1),
                         transport_hints);
@@ -425,7 +425,7 @@ class StorageSubscriberImpl : public SubscriberImpl
 
     dest_ = dest;
     //transport_hints.depth = 2;
-    sub_ = nh->nh_->create_subscription<M>(mapped_topic_,
+    sub_ = nh->create_subscription<M>(mapped_topic_,
                         std::bind(&StorageSubscriberImpl::handleMessage,
                         this, std::placeholders::_1),
                         transport_hints);

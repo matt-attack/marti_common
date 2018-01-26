@@ -35,6 +35,7 @@ set(BUILD_DEPS nav_msgs rclcpp std_msgs std_srvs class_loader)
 set(RUNTIME_DEPS nav_msgs rclcpp std_msgs std_srvs)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
+  "srv/Interrogate.srv"
   "srv/LoadNode.srv"
 )
 
@@ -96,6 +97,25 @@ target_link_libraries(nodelet_manager
   ament_index_cpp::ament_index_cpp
 )
 
+add_executable(node_info src/node_info.cpp)
+ament_target_dependencies(node_info
+  class_loader
+  rcutils
+  rclcpp
+  rosidl_typesupport_cpp
+)
+rosidl_target_interfaces(node_info
+  ${PROJECT_NAME} 
+  rosidl_typesupport_cpp
+)
+target_link_libraries(node_info 
+  ${LIBS} 
+  ${PROJECT_NAME}_core
+  ${rosidl_typesupport_cpp_LIBRARIES}
+  ament_index_cpp::ament_index_cpp
+)
+
+
 add_library(${PROJECT_NAME}_core SHARED
   src/logging.cpp
   src/node.cpp
@@ -119,7 +139,7 @@ install(TARGETS
   ${PROJECT_NAME}_core
   nodelet_manager
   nodelet
-  
+  node_info
   #subscriber_test latched_subscriber_test param_example
   ARCHIVE
   DESTINATION lib

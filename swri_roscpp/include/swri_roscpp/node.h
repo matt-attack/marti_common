@@ -35,6 +35,9 @@
 
 #include <map>
 
+#include <swri_roscpp/srv/interrogate.hpp>
+
+#define STRINGIZE(x) typeid(x).name()
 namespace swri
 {
 class Node
@@ -43,6 +46,7 @@ class Node
   std::string node_namespace_;
  
   std::shared_ptr<rclcpp::ParameterService> parameter_service_;
+  rclcpp::Service<swri_roscpp::srv::Interrogate>::SharedPtr info_service_;
   std::map<std::string, std::string> remappings_;
  public:
   std::shared_ptr<rclcpp::Node> nh_;
@@ -71,7 +75,32 @@ class Node
     return nh_->create_wall_timer(std::chrono::duration<int64_t, std::micro>((int64_t)(1000000.0/rate)), callback);
   }
 
+  template<class M, class CallbackT>
+  rclcpp::SubscriptionBase::SharedPtr create_subscription(const std::string& topic, CallbackT callback,
+    const rmw_qos_profile_t& transport_hints)
+  {
+    auto sub = nh_->create_subscription<M>(topic,
+                        callback,
+                        transport_hints);
+    topic_type_map_[sub->get_topic_name()] = STRINGIZE(M);
+    return sub;
+  }
+
+  template<class M>
+  std::shared_ptr<rclcpp::Publisher<M>> create_publisher(const std::string& topic,
+    const rmw_qos_profile_t& transport_hints)
+  {
+    auto pub = nh_->create_publisher<M>(topic,
+                        transport_hints);
+    topic_type_map_[pub->get_topic_name()] = STRINGIZE(M);
+    pubs_.push_back(pub);
+    return pub;
+  }
+
  private:
+  std::map<std::string, std::string> topic_type_map_;
+  std::vector<std::weak_ptr<rclcpp::PublisherBase>> pubs_;
+
   void parse_arguments(int argc, char** argv);
 
   void parse_remap(const std::string& val);
