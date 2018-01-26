@@ -49,19 +49,18 @@ int main(int argc, char * argv[])
   
   std::string node_name = argc > 1 ? argv[1] : "";
 
-  auto node = rclcpp::Node::make_shared("nodelet_cli");
+  auto node = rclcpp::Node::make_shared("node_info_cli");
   auto client = node->create_client<swri_roscpp::srv::Interrogate>(node_name+"/info");
   using namespace std::chrono_literals;
   while (!client->wait_for_service(1s)) 
   {
     if (!rclcpp::ok()) 
     {
-      RCLCPP_ERROR(
-        node->get_logger(),
-        "Interrupted while waiting for the service. Exiting.")
+      printf(
+        "Interrupted while waiting for the service. Exiting.\n");
       return 1;
     }
-    RCLCPP_INFO(node->get_logger(), "Service not available, waiting again...")
+    printf("Service not available, waiting again...\n");
   }
 
   auto request = std::make_shared<swri_roscpp::srv::Interrogate::Request>();
@@ -73,13 +72,13 @@ int main(int argc, char * argv[])
     request->parameters.push_back(argv[i]);
   }*/
 
-  RCLCPP_INFO(node->get_logger(), "Sending request...")
+  printf("Sending request...\n");
   auto result = client->async_send_request(request);
-  RCLCPP_INFO(node->get_logger(), "Waiting for response...")
+  printf("Waiting for response...\n");
   if (rclcpp::spin_until_future_complete(node, result) !=
       rclcpp::executor::FutureReturnCode::SUCCESS)
   {
-    RCLCPP_ERROR(node->get_logger(), "Interrupted while waiting for response. Exiting.")
+    printf("Interrupted while waiting for response. Exiting.\n");
     if (!rclcpp::ok()) 
     {
       return 0;
@@ -89,14 +88,26 @@ int main(int argc, char * argv[])
   auto res = result.get();
   for (int i = 0; i < res->subscriptions.size(); i++)
   {
-    RCLCPP_INFO(node->get_logger(), "Subscribes to: %s (%s)", res->subscriptions[i].c_str(),
+    printf("Subscribes to: %s (%s)\n", res->subscriptions[i].c_str(),
                 res->subscription_types[i].c_str());
   }
 
   for (int i = 0; i < res->publications.size(); i++)
   {
-    RCLCPP_INFO(node->get_logger(), "Publishes: %s (%s)", res->publications[i].c_str(),
+    printf("Publishes: %s (%s)\n", res->publications[i].c_str(),
                 res->publication_types[i].c_str());
+  }
+
+  for (int i = 0; i < res->service_servers.size(); i++)
+  {
+    printf("Service host: %s (%s)\n", res->service_servers[i].c_str(),
+                res->service_server_types[i].c_str());
+  }
+
+  for (int i = 0; i < res->service_servers.size(); i++)
+  {
+    printf("Service client: %s (%s)\n", res->service_clients[i].c_str(),
+                res->service_client_types[i].c_str());
   }
   //RCLCPP_INFO(
   //  node->get_logger(), "Result of load_node: success = %s",
