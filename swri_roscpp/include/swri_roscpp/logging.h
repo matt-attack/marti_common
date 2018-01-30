@@ -32,6 +32,8 @@
 #include <rclcpp/node.hpp>
 #include <rclcpp/logging.hpp>
 
+#include <sstream>
+
 #define ROS_ERROR(...) RCLCPP_ERROR(swri::get_logger(), __VA_ARGS__)
 #define ROS_WARN(...) RCLCPP_WARN(swri::get_logger(), __VA_ARGS__)
 #define ROS_INFO(...) RCLCPP_INFO(swri::get_logger(), __VA_ARGS__)
@@ -42,6 +44,23 @@
 #define ROS_WARN_THROTTLE(rate, ...) RCLCPP_WARN(swri::get_logger(), __VA_ARGS__)
 #define ROS_INFO_THROTTLE(rate, ...) RCLCPP_INFO(swri::get_logger(), __VA_ARGS__)
 #define ROS_DEBUG_THROTTLE(rate, ...) RCLCPP_INFO(swri::get_logger(), __VA_ARGS__)
+
+
+#define ROS_WARN_STREAM(args) \
+  do { \
+    std::stringstream s; \
+    s << args; \
+    RCLCPP_WARN(swri::get_logger(), "%s", s.str().c_str()); \
+  } \
+  while (0)
+
+#define ROS_ERROR_STREAM(args) \
+  do { \
+    std::stringstream s; \
+    s << args; \
+    RCLCPP_ERROR(swri::get_logger(), "%s", s.str().c_str()); \
+  } \
+  while (0)
 
 #if NDEBUG
 #define ROS_ASSERT(cond) \

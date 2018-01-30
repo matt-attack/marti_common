@@ -31,13 +31,16 @@
 
 #include <swri_roscpp/service_server_statistics.h>
 
+#include <swri_roscpp/time.h>
+
 namespace swri
 {
 class ServiceServer;
 class ServiceServerImpl
 {
  protected:
-  ros::ServiceServer server_;
+  swri::Node* node_;
+  rclcpp::ServiceBase::SharedPtr server_;
   std::string unmapped_service_;
   std::string mapped_service_;
 
@@ -49,7 +52,7 @@ class ServiceServerImpl
   
   void processServing(const std::string caller_name,
                       bool success,
-                      const ros::WallDuration &runtime)
+                      const rclcpp::Duration &runtime)
   {
     total_stats_.merge(success, runtime);
     if (instrument_per_client_) {
@@ -120,19 +123,20 @@ class ServiceServerImpl
   bool logCalls() const { return log_calls_; }
 };
 
-template<class MReq, class MRes, class T>
+template<class S, class MReq, class MRes, class T>
 class TypedServiceServerImpl : public ServiceServerImpl
 {
   T *obj_;
-  bool (T::*callback_plain_)(MReq &, MRes &);
-  bool (T::*callback_with_event_)(ros::ServiceEvent< MReq, MRes > &);
-  bool (T::*callback_with_name_)(const std::string &, const MReq &, MRes &);
+  void (T::*callback_plain_)(const MReq, MRes);
+  //bool (T::*callback_with_event_)(ros::ServiceEvent< MReq, MRes > &);
+  //bool (T::*callback_with_name_)(const std::string &, const MReq &, MRes &);
 
-  void initialize(ros::NodeHandle &nh,
+  void initialize(swri::Node* nh,
                   const std::string &service)
   {
+    node_ = nh;
     unmapped_service_ = service;
-    mapped_service_ = nh.resolveName(service);
+    mapped_service_ = service;//nh.resolveName(service);
 
     if (unmapped_service_ == mapped_service_) {
       ROS_INFO("Serving to '%s'.", mapped_service_.c_str());
@@ -142,64 +146,66 @@ class TypedServiceServerImpl : public ServiceServerImpl
                mapped_service_.c_str());
     }
 
-    server_ = nh.advertiseService(mapped_service_,
-                                  &TypedServiceServerImpl::handleService,
-                                  this);
+    server_ = nh->nh_->create_service<S>(mapped_service_,
+                                  std::bind(&TypedServiceServerImpl::handleService,
+                                  this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
   }
 
-  bool handleService(ros::ServiceEvent<MReq, MRes> &event)
+  void handleService(const std::shared_ptr<rmw_request_id_t> request_header,
+       const MReq req, MRes res)
+       //ros::ServiceEvent<MReq, MRes> &event)
   {
     if (logCalls()) {
       ROS_INFO("Service '%s' called by '%s'",
                mapped_service_.c_str(),
-               event.getCallerName().c_str());
+               "unknown"/*event.getCallerName().c_str()*/);
     }
     
     bool result;
-    ros::WallTime start = ros::WallTime::now();
+    rclcpp::Time start = node_->nh_->now();//walltime
 
     try {
       if (callback_plain_) {
-        result = (obj_->*callback_plain_)(
-          const_cast<MReq&>(event.getRequest()), event.getResponse());
-      } else if (callback_with_name_) {
-        result = (obj_->*callback_with_name_)(
-          event.getCallerName(), event.getRequest(), event.getResponse());
-      } else {
-        result = (obj_->*callback_with_event_)(event);
+        (obj_->*callback_plain_)(req, res);
+      }// else if (callback_with_name_) {
+        //result = (obj_->*callback_with_name_)(
+        //  event.getCallerName(), event.getRequest(), event.getResponse());
+      //} 
+      else {
+        //result = (obj_->*callback_with_event_)(event);
       }
     } catch (...) {
       result = false;
     }
-    ros::WallTime finish = ros::WallTime::now();
+    rclcpp::Time finish = node_->nh_->now();//walltime
 
-    processServing(event.getCallerName(), result, finish-start);
-    return result;
+    processServing(/*event.getCallerName()*/"unknown", result, finish-start);
+    //return result;
   }
 
  public:
   TypedServiceServerImpl()
     :
     obj_(NULL),
-    callback_plain_(NULL),
-    callback_with_event_(NULL),
-    callback_with_name_(NULL)
+    callback_plain_(NULL)
+    //callback_with_event_(NULL),
+    //callback_with_name_(NULL)
   {
   }
 
-  TypedServiceServerImpl(ros::NodeHandle &nh,
+  TypedServiceServerImpl(swri::Node* nh,
                          const std::string &service,
-                         bool(T::*srv_func)(MReq &, MRes &),
+                         void(T::*srv_func)(const MReq, MRes),
                          T *obj)
   {
     obj_ = obj;
     callback_plain_ = srv_func;
-    callback_with_event_ = NULL;
-    callback_with_name_ = NULL;
+    //callback_with_event_ = NULL;
+    //callback_with_name_ = NULL;
     initialize(nh, service);
   }
 
-  TypedServiceServerImpl(ros::NodeHandle &nh,
+  /*TypedServiceServerImpl(swri::Node* nh,
                          const std::string &service,
                          bool(T::*srv_func)(ros::ServiceEvent<MReq, MRes> &),
                          T *obj)
@@ -211,9 +217,9 @@ class TypedServiceServerImpl : public ServiceServerImpl
     initialize(nh, service);
   }
 
-  TypedServiceServerImpl(ros::NodeHandle &nh,
+  TypedServiceServerImpl(swri::Node* nh,
                          const std::string &service,
-                         bool(T::*srv_func)(const std::string &, const MReq &, MRes &),
+                         bool(T::*srv_func)(const std::string &, const MReq, MRes),
                          T *obj)
   {
     obj_ = obj;
@@ -221,7 +227,7 @@ class TypedServiceServerImpl : public ServiceServerImpl
     callback_with_event_ = NULL;
     callback_with_name_ = srv_func;
     initialize(nh, service);
-  }
+  }*/
 };  // class TypedServiceServerImpl
 }  // namespace swri
 #endif  // SWRI_ROSCPP_SERVICE_SERVER_IMPL_H_

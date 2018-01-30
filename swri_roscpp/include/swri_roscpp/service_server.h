@@ -29,10 +29,12 @@
 #ifndef SWRI_ROSCPP_SERVICE_SERVER_H_
 #define SWRI_ROSCPP_SERVICE_SERVER_H_
 
-#include <ros/node_handle.h>
+#include <swri_roscpp/node.h>
 #include <diagnostic_updater/DiagnosticStatusWrapper.h>
 #include <swri_roscpp/service_server_impl.h>
 #include <swri_roscpp/service_server_statistics.h>
+
+#include <swri_roscpp/time.h>
 
 namespace swri
 {
@@ -44,23 +46,23 @@ class ServiceServer
  public:
   ServiceServer();
 
-  template<class MReq, class MRes, class T>
-  ServiceServer(ros::NodeHandle &nh,
+  template<class S, class MReq, class MRes, class T>
+  void setup(swri::Node* nh,
                 const std::string &service,
-                bool(T::*srv_func)(MReq &, MRes &),
+                void(T::*srv_func)(const MReq, MRes),
                 T *obj);
 
-  template<class MReq, class MRes, class T>
-  ServiceServer(ros::NodeHandle &nh,
+  /*template<class MReq, class MRes, class T>
+  ServiceServer(swri::Node* nh,
                 const std::string &service,
                 bool(T::*srv_func)(ros::ServiceEvent< MReq, MRes > &),                
                 T *obj);
 
   template<class MReq, class MRes, class T>
-  ServiceServer(ros::NodeHandle &nh,
+  ServiceServer(swri::Node* nh,
                 const std::string &service,
                 bool(T::*srv_func)(const std::string &, const MReq &, MRes &),
-                T *obj);
+                T *obj);*/
   
   ServiceServer& operator=(const ServiceServer &other);
 
@@ -126,19 +128,19 @@ ServiceServer::ServiceServer()
   impl_ = boost::make_shared<ServiceServerImpl>();
 }
 
-template<class MReq, class MRes, class T>
+template<class S, class MReq, class MRes, class T>
 inline
-ServiceServer::ServiceServer(ros::NodeHandle &nh,
+void ServiceServer::setup(swri::Node* nh,
                              const std::string &service,
-                             bool(T::*srv_func)(MReq &, MRes &),
+                             void(T::*srv_func)(const MReq, MRes),
                              T *obj)
 {
   impl_ = boost::shared_ptr<ServiceServerImpl>(
-    new TypedServiceServerImpl<MReq, MRes, T>(
+    new TypedServiceServerImpl<S, MReq, MRes, T>(
       nh, service, srv_func, obj));
 }
 
-template<class MReq, class MRes, class T>
+/*template<class MReq, class MRes, class T>
 inline
 ServiceServer::ServiceServer(ros::NodeHandle &nh,
                              const std::string &service,
@@ -160,7 +162,7 @@ ServiceServer::ServiceServer(ros::NodeHandle &nh,
   impl_ = boost::shared_ptr<ServiceServerImpl>(
     new TypedServiceServerImpl<MReq, MRes, T>(
       nh, service, srv_func, obj));
-}
+}*/
 
 inline
 ServiceServer& ServiceServer::operator=(const ServiceServer &other)
@@ -243,7 +245,7 @@ void ServiceServer::appendDiagnostics(
   const ServiceServerStatistics& stats = statistics();
 
   // Alias a type for easier access to DiagnosticStatus enumerations.
-  typedef diagnostic_msgs::DiagnosticStatus DS;
+  typedef diagnostic_msgs::msg::DiagnosticStatus DS;
 
   if (stats.lastFailed()) {
     status.mergeSummaryf(DS::ERROR, "Last %s service called failed", name.c_str());
@@ -268,9 +270,9 @@ void ServiceServer::appendDiagnostics(
 
   if (flags & DIAG_TIMING) {
     status.addf(name + "service call time", "%.2f [s] (%.2f [s] - %.2f [s])",
-                stats.meanTime().toSec(),
-                stats.minTime().toSec(),
-                stats.maxTime().toSec());
+                swri::toSec(stats.meanTime()),
+                swri::toSec(stats.minTime()),
+                swri::toSec(stats.maxTime()));
   }
 
   if (flags & DIAG_CLIENTS) {
@@ -287,12 +289,23 @@ void ServiceServer::appendDiagnostics(
 
       if (flags & DIAG_TIMING) {
         status.addf(name + " calls from " + names[i] + " time", "%.2f [s] (%.2f [s] - %.2f [s])",
-                client_stats.meanTime().toSec(),
-                client_stats.minTime().toSec(),
-                client_stats.maxTime().toSec());
+                swri::toSec(client_stats.meanTime()),
+                swri::toSec(client_stats.minTime()),
+                swri::toSec(client_stats.maxTime()));
       }
     }
   }
+}
+
+template <class S, class MReq, class MRes, class T>
+ServiceServer&& service(swri::Node* nh,
+                        const std::string &service,
+                        void(T::*srv_func)(const MReq, MRes),
+                        T *obj)
+{
+  auto srv = ServiceServer();//nh, service, srv_func, obj);
+  srv.setup<S, MReq, MRes, T>(nh, service, srv_func, obj);
+  return std::move(srv);
 }
 }  // namespace swri
 #endif  // SWRI_ROSCPP_SERVICE_SERVER_H_

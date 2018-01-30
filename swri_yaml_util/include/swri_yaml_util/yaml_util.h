@@ -35,7 +35,7 @@
 
 #include <yaml-cpp/yaml.h>
 
-#include <swri_yaml_util/version.h>
+//#include <swri_yaml_util/version.h>
 
 #ifndef YAMLCPP_OLD_API
 namespace YAML

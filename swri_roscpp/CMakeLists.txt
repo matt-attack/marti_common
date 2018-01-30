@@ -17,6 +17,7 @@ find_package(ament_index_cpp REQUIRED)
 find_package(class_loader REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rcutils REQUIRED)
+find_package(rmw_fastrtps_cpp REQUIRED)
 find_package(rosidl_cmake REQUIRED)
 find_package(rosgraph_msgs REQUIRED)
 
@@ -99,7 +100,6 @@ target_link_libraries(nodelet_manager
 
 add_executable(node_info src/node_info.cpp)
 ament_target_dependencies(node_info
-  class_loader
   rcutils
   rclcpp
   rosidl_typesupport_cpp
@@ -115,6 +115,22 @@ target_link_libraries(node_info
   ament_index_cpp::ament_index_cpp
 )
 
+add_executable(topic_info src/topic_info.cpp)
+ament_target_dependencies(topic_info
+  rcutils
+  rclcpp
+  rosidl_typesupport_cpp
+)
+rosidl_target_interfaces(topic_info
+  ${PROJECT_NAME} 
+  rosidl_typesupport_cpp
+)
+target_link_libraries(topic_info 
+  ${LIBS} 
+  ${PROJECT_NAME}_core
+  ${rosidl_typesupport_cpp_LIBRARIES}
+  ament_index_cpp::ament_index_cpp
+)
 
 add_library(${PROJECT_NAME}_core SHARED
   src/logging.cpp
@@ -124,6 +140,7 @@ add_library(${PROJECT_NAME}_core SHARED
 ament_target_dependencies(${PROJECT_NAME}_core
   ${PROJECT_NAME}
   rclcpp
+  rmw_fastrtps_cpp
   rosgraph_msgs
 )
 target_link_libraries(${PROJECT_NAME}_core ${LIBS})

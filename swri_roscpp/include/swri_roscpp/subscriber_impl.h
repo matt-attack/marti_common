@@ -35,6 +35,8 @@
 #include <swri_roscpp/logging.h>
 #include <swri_roscpp/node.h>
 
+#include <boost/utility/enable_if.hpp>
+
 namespace swri
 {
 
@@ -285,10 +287,19 @@ class SubscriberImpl
   }
 };  // class SubscriberImpl
 
-struct TrueType
-{
-  static const bool value = true;
-};
+#include <type_traits>
+
+// This comes from cppreference
+template<typename... Ts> struct make_void { typedef void type;};
+template<typename... Ts> using void_t = typename make_void<Ts...>::type;
+
+// primary template handles types that have no ::aMember 
+template< class T, class = void_t<> >
+struct has_header : std::false_type { };
+
+// specialization recognizes types that do have a ::aMember
+template< class T >
+struct has_header<T, void_t<decltype( T::header )>> : std::true_type { };
 
 template<class M , class T>
 class TypedSubscriberImpl : public SubscriberImpl
@@ -320,25 +331,26 @@ class TypedSubscriberImpl : public SubscriberImpl
     callback_ = fp;
     obj_ = obj;
     //transport_hints.depth = queue_size;
+
     sub_ = nh->create_subscription<M>(mapped_topic_,
-                        std::bind(&TypedSubscriberImpl::handleMessage,
+                        std::bind(&TypedSubscriberImpl::handleMessage<M>,
                         this, std::placeholders::_1),
                         transport_hints);
   }
 
   // Handler for messages with headers
-  /*template <class M2>
-  typename std::enable_if< ros::message_traits::HasHeader<M2>, void>::type
-  handleMessage(const std::shared_ptr< M const> &msg)
+  template <class M2 = M>
+  typename std::enable_if<(bool)has_header<M2>(), void>::type
+  handleMessage(const std::shared_ptr< M > msg)
   {
     processHeader(msg->header.stamp);
     (obj_->*callback_)(msg);
-  }*/
+  }
 
   // Handler for messages without headers
-  //template <class M2>
-  //typename std::disable_if< ros::message_traits::HasHeader<M2>, void>::type
-  void handleMessage(const std::shared_ptr< M > msg)
+  template <class M2 = M>
+  typename std::enable_if< !(bool)has_header<M2>(), void>::type
+  handleMessage(const std::shared_ptr< M > msg)
   {
     processHeader(nh_->now());
     (obj_->*callback_)(msg);
@@ -375,24 +387,24 @@ class BindSubscriberImpl : public SubscriberImpl
 
     transport_hints.depth = queue_size;
     sub_ = nh->create_subscription(mapped_topic_,
-                        std::bind(&BindSubscriberImpl::handleMessage,
+                        std::bind(&BindSubscriberImpl::handleMessage<M>,
                         this, std::placeholders::_1),
                         transport_hints);
   }
 
   // Handler for messages with headers
-  /*template <class M2>
-  typename std::enable_if< ros::message_traits::HasHeader<M2>, void>::type
-  handleMessage(const std::shared_ptr< M const> &msg)
+  template <class M2 = M>
+  typename std::enable_if< (bool)has_header<M2>(), void>::type
+  handleMessage(const std::shared_ptr< M > msg)
   {
     processHeader(msg->header.stamp);
     callback_(msg);
-  }*/
+  }
 
   // Handler for messages without headers
-  //template <class M2>
-  //typename std::disable_if< ros::message_traits::HasHeader<M2>, void>::type
-  void handleMessage(const std::shared_ptr< M > msg)
+  template <class M2 = M>
+  typename std::enable_if< !(bool)has_header<M2>(), void>::type
+  handleMessage(const std::shared_ptr< M > msg)
   {
     processHeader(nh_->now());
     callback_(msg);
@@ -426,24 +438,24 @@ class StorageSubscriberImpl : public SubscriberImpl
     dest_ = dest;
     //transport_hints.depth = 2;
     sub_ = nh->create_subscription<M>(mapped_topic_,
-                        std::bind(&StorageSubscriberImpl::handleMessage,
+                        std::bind(&StorageSubscriberImpl::handleMessage<M>,
                         this, std::placeholders::_1),
                         transport_hints);
   }
 
   // Handler for messages with headers
-  /*template <class M2>
-  typename std::enable_if< ros::message_traits::HasHeader<M2>, void>::type
-  handleMessage(const std::shared_ptr< M const> &msg)
+  template <class M2 = M>
+  typename std::enable_if< (bool)has_header<M2>(), void>::type
+  handleMessage(const std::shared_ptr< M > msg)
   {
     processHeader(msg->header.stamp);
     *dest_ = msg;
-  }*/
+  }
 
   // Handler for messages without headers
-  //template <class M2>
-  //typename std::disable_if< ros::message_traits::HasHeader<M2>, void>::type
-  void handleMessage(const std::shared_ptr< M > msg)
+  template <class M2 = M>
+  typename std::enable_if< !(bool)has_header<M2>(), void>::type
+  handleMessage(const std::shared_ptr< M > msg)
   {
     processHeader(nh_->now());
     *dest_ = msg;

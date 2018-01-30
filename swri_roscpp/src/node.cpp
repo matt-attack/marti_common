@@ -2,6 +2,9 @@
 
 #include <swri_roscpp/node.h>
 
+#include "rmw_fastrtps_cpp/get_participant.hpp"
+#include "rmw_fastrtps_cpp/get_subscriber.hpp"
+
 namespace swri
 {
   void Node::Initialize(int argc, char** argv, bool is_nodelet)
@@ -55,6 +58,13 @@ namespace swri
           auto subp = sub.lock();
           if (subp)
           {
+            //subp
+            rcl_subscription_t * rcl_sub = subp->get_subscription_handle();
+            rmw_subscription_t * rmw_sub = rcl_subscription_get_rmw_handle(rcl_sub);
+            eprosima::fastrtps::Subscriber * p = rmw_fastrtps_cpp::get_subscriber(rmw_sub);
+            //auto attribs = p->getAttributes();
+            
+
             response->subscriptions.push_back(subp->get_topic_name());
             std::string res = typeid(*subp).name();//this->topic_type_map_[pt->get_topic_name()];
             //remove the Subscription part

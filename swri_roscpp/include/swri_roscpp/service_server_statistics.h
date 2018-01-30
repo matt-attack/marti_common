@@ -29,7 +29,8 @@
 #ifndef SWRI_ROSCPP_SERVICE_SERVER_STATISTICS_H_
 #define SWRI_ROSCPP_SERVICE_SERVER_STATISTICS_H_
 
-#include <ros/time.h>
+#include <rclcpp/time.hpp>
+#include <swri_roscpp/time.h>
 
 namespace swri
 {
@@ -41,15 +42,19 @@ class ServiceServerStatistics
   int failed_;
   bool last_failed_;
 
-  ros::WallDuration total_time_;
-  ros::WallDuration min_time_;
-  ros::WallDuration max_time_;
+  rclcpp::Duration total_time_;
+  rclcpp::Duration min_time_;
+  rclcpp::Duration max_time_;
 
-  void merge(bool success, const ros::WallDuration &runtime);
+  void merge(bool success, const rclcpp::Duration &runtime);
   friend class ServiceServerImpl;
 
  public:
-  ServiceServerStatistics() { reset(); }
+  ServiceServerStatistics() :
+    total_time_(0,0),
+    min_time_(0,0),
+    max_time_(0,0)
+  { reset(); }
   void reset();
 
   int servings() const { return servings_; }
@@ -57,9 +62,9 @@ class ServiceServerStatistics
   int failed() const { return failed_; }
   bool lastFailed() const { return last_failed_; }
 
-  ros::WallDuration meanTime() const;
-  ros::WallDuration minTime() const { return min_time_; }
-  ros::WallDuration maxTime() const { return max_time_; }
+  rclcpp::Duration meanTime() const;
+  rclcpp::Duration minTime() const { return min_time_; }
+  rclcpp::Duration maxTime() const { return max_time_; }
 };  // struct ServiceServerStatistics
 
 
@@ -70,24 +75,25 @@ void ServiceServerStatistics::reset()
   succeeded_ = 0;
   failed_ = 0;
   last_failed_ = false;
-  total_time_ = ros::WallDuration(0);
-  min_time_ = ros::WallDuration(0);
-  max_time_ = ros::WallDuration(0);
+  total_time_ = rclcpp::Duration(0, 0);
+  min_time_ = rclcpp::Duration(0, 0);
+  max_time_ = rclcpp::Duration(0, 0);
 }
 
 inline
-ros::WallDuration ServiceServerStatistics::meanTime() const
+rclcpp::Duration ServiceServerStatistics::meanTime() const
 {
   if (servings_ == 0) {
-    return ros::WallDuration(0);
+    return rclcpp::Duration(0, 0);
   } else {
-    return ros::WallDuration(total_time_.toSec() / servings_);
+    double frac = swri::toSec(total_time_) / servings_;
+    return rclcpp::Duration((int)frac, fmod(frac, 1)*1000000000.0);
   }
 }
 
 inline
 void ServiceServerStatistics::merge(
-  bool success, const ros::WallDuration &runtime)
+  bool success, const rclcpp::Duration &runtime)
 {
   servings_++;
   if (success) {
@@ -103,7 +109,7 @@ void ServiceServerStatistics::merge(
     min_time_ = runtime;
     max_time_ = runtime;
   } else {
-    total_time_ += runtime;
+    total_time_ = total_time_ + runtime;
     min_time_ = std::min(min_time_, runtime);
     max_time_ = std::max(max_time_, runtime);
   }
