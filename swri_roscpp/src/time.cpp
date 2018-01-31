@@ -44,4 +44,7 @@ double toSec(const rclcpp::Duration& duration)
 const rclcpp::Time TIME_MAX(std::numeric_limits<int32_t>::max(), 999999999, RCL_ROS_TIME);
 const rclcpp::Time TIME_MIN(0, 1, RCL_ROS_TIME);
 
+const rclcpp::Duration DURATION_MAX(std::numeric_limits<int32_t>::max(), 999999999);
+const rclcpp::Duration DURATION_MIN(0, 1);
+
 }  // namespace swri

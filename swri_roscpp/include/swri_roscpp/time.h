@@ -40,8 +40,8 @@ double toSec(const rclcpp::Duration& duration);
 extern const rclcpp::Time TIME_MAX;
 extern const rclcpp::Time TIME_MIN;
 
-extern const rclcpp::Time DURATION_MAX;
-extern const rclcpp::Time DURATION_MIN;
+extern const rclcpp::Duration DURATION_MAX;
+extern const rclcpp::Duration DURATION_MIN;
 
 }  // namespace swri
 #endif  // SWRI_ROSCPP_TIME_H_
