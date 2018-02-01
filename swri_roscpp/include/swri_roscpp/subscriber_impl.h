@@ -34,14 +34,13 @@
 
 #include <swri_roscpp/logging.h>
 #include <swri_roscpp/node.h>
+#include <swri_roscpp/time.h>
 
 #include <boost/utility/enable_if.hpp>
 
 namespace swri
 {
 
-#define DURATION_MAX rclcpp::Duration(1000000, 0)
-#define DURATION_MIN rclcpp::Duration(0, 0)
 class Subscriber;
 class SubscriberImpl
 {
@@ -58,13 +57,13 @@ class SubscriberImpl
   rclcpp::Time last_header_stamp_ = rclcpp::Time(0, 0, RCL_ROS_TIME);
   rclcpp::Time last_receive_time_ = rclcpp::Time(0, 0, RCL_ROS_TIME);
 
-  rclcpp::Duration total_latency_ = DURATION_MIN;
-  rclcpp::Duration min_latency_ = DURATION_MAX;
-  rclcpp::Duration max_latency_ = DURATION_MIN;
+  rclcpp::Duration total_latency_ = swri::DURATION_MIN;
+  rclcpp::Duration min_latency_ = swri::DURATION_MAX;
+  rclcpp::Duration max_latency_ = swri::DURATION_MIN;
 
-  rclcpp::Duration total_periods_ = DURATION_MAX;
-  rclcpp::Duration min_period_ = DURATION_MAX;
-  rclcpp::Duration max_period_ = DURATION_MIN;
+  rclcpp::Duration total_periods_ = swri::DURATION_MAX;
+  rclcpp::Duration min_period_ = swri::DURATION_MAX;
+  rclcpp::Duration max_period_ = swri::DURATION_MIN;
 
   rclcpp::Duration timeout_ = rclcpp::Duration(0, 0);
   bool in_timeout_;

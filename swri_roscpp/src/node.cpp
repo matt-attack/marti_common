@@ -192,33 +192,77 @@ namespace swri
     }
   }
 
-  void Node::get_parameter(const std::string& n, YAML::Node& ne)
+  YAML::Node get_from_name(YAML::Node root, const std::string& name)
+  {
+    //std::cout << "Name: " << name << "\n";
+    
+    int sep_pos = name.find("/");
+    if (name[0] >= '0' && name[0] <= '9')
+    {
+      //its a sequence
+      int i = std::atoi(name.c_str());
+      //std::cout << "Was seq i = " << i << "\n";
+      /*if (!root[i])
+      {
+        YAML::Node n(YAML::NodeType::Map);
+        //n["_t"] = 5;
+        root[i] = n;
+      }*/
+      if (sep_pos <= 0)
+        return root[i];
+      return get_from_name(root[i], name.substr(sep_pos+1));
+    }
+
+    if (sep_pos >= 1)
+    {
+      std::string group = name.substr(0, sep_pos);
+      //std::cout << "pos is " << sep_pos << " " << group << "\n";
+
+      if (!root[group])
+      {
+        YAML::Node n(YAML::NodeType::Sequence);
+        //n["_t"] = 5;
+        root[group] = n;
+      }
+      return get_from_name(root[group], name.substr(sep_pos+1));
+    }
+
+    //std::cout << "pos is " << sep_pos << "\n";
+    return root[name];
+  }
+
+  void Node::get_parameter(const std::string& na, YAML::Node& node)
   {
     auto params = nh_->list_parameters({}, 64);
     auto& names = params.names;
     //auto node = YAML::Load("[1, 2, 3]");
-    YAML::Node no;
-    no["pie"] = "test";
+    //YAML::Node no;
+    node[0] = YAML::Node(YAML::NodeType::Sequence);
+    //node["test"] = YAML::Node(YAML::NodeType::Sequence);
+    //node["test"][0] = 5;
     for (auto name: names)
     {
       rclcpp::parameter::ParameterVariant param;
       nh_->get_parameter(name, param); 
 
-      printf("Got parameter %s\n", name.c_str());
+      //printf("Got parameter %s\n", name.c_str());
 
       auto type = param.get_type();
-      
-      /*if (type == rclcpp::parameter::ParameterType::PARAMETER_DOUBLE)
-        node[name] = param.as_double();
-      else if (type == rclcpp::parameter::ParameterType::PARAMETER_BOOL)
-        node[name] = param.as_bool();
-      else if (type == rclcpp::parameter::ParameterType::PARAMETER_INTEGER)
-        node[name] = param.as_int();
-      else if (type == rclcpp::parameter::ParameterType::PARAMETER_STRING)
-        node[name] = param.as_string();*/
+      if (name.substr(0, na.length()) != na)
+        continue;
 
+      YAML::Node n = get_from_name(node, name.substr(na.length() + 1));
+      
+      if (type == rclcpp::parameter::ParameterType::PARAMETER_DOUBLE)
+        n = param.as_double();
+      else if (type == rclcpp::parameter::ParameterType::PARAMETER_BOOL)
+        n = param.as_bool();
+      else if (type == rclcpp::parameter::ParameterType::PARAMETER_INTEGER)
+        n = param.as_int();
+      else if (type == rclcpp::parameter::ParameterType::PARAMETER_STRING)
+        n = param.as_string();
     }
-    //std::cout << node;
+    std::cout << node;
   }
 
   void Node::parse_remap(const std::string& val)
