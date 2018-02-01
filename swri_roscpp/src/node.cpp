@@ -192,6 +192,35 @@ namespace swri
     }
   }
 
+  void Node::get_parameter(const std::string& n, YAML::Node& ne)
+  {
+    auto params = nh_->list_parameters({}, 64);
+    auto& names = params.names;
+    //auto node = YAML::Load("[1, 2, 3]");
+    YAML::Node no;
+    no["pie"] = "test";
+    for (auto name: names)
+    {
+      rclcpp::parameter::ParameterVariant param;
+      nh_->get_parameter(name, param); 
+
+      printf("Got parameter %s\n", name.c_str());
+
+      auto type = param.get_type();
+      
+      /*if (type == rclcpp::parameter::ParameterType::PARAMETER_DOUBLE)
+        node[name] = param.as_double();
+      else if (type == rclcpp::parameter::ParameterType::PARAMETER_BOOL)
+        node[name] = param.as_bool();
+      else if (type == rclcpp::parameter::ParameterType::PARAMETER_INTEGER)
+        node[name] = param.as_int();
+      else if (type == rclcpp::parameter::ParameterType::PARAMETER_STRING)
+        node[name] = param.as_string();*/
+
+    }
+    //std::cout << node;
+  }
+
   void Node::parse_remap(const std::string& val)
   {
     int split = val.find(";=");

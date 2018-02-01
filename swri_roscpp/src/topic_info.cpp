@@ -54,7 +54,7 @@ int main(int argc, char * argv[])
 
   auto node = rclcpp::Node::make_shared("node_info_cli");
   auto client = node->create_client<swri_roscpp::srv::Interrogate>(node_name+"/info");
-  using namespace std::chrono_literals;
+  //using namespace std::chrono_literals;
   /*while (!client->wait_for_service(1s)) 
   {
     if (!rclcpp::ok()) 
@@ -95,7 +95,7 @@ int main(int argc, char * argv[])
 
   for (int i = 0; i < 100; i++)
   {
-    rclcpp::sleep_for(5000000ns);
+    //rclcpp::sleep_for(5000000ns);
     rclcpp::spin_some(node);
   }
   

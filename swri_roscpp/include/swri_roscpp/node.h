@@ -37,6 +37,8 @@
 
 #include <swri_roscpp/srv/interrogate.hpp>
 
+#include <swri_yaml_util/yaml_util.h>
+
 #define STRINGIZE(x) typeid(x).name()
 namespace swri
 {
@@ -96,6 +98,8 @@ class Node
     pubs_.push_back(pub);
     return pub;
   }
+
+  void get_parameter(const std::string& n, YAML::Node& node);
 
  private:
   std::map<std::string, std::string> topic_type_map_;

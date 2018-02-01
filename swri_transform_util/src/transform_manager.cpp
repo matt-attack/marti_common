@@ -372,7 +372,7 @@ namespace swri_transform_util
       transform = tf_buffer_->lookupTransform(
           target_frame,
           source_frame,
-          tf2::TimePoint(std::chrono::nanoseconds(now.nanoseconds()))));
+          tf2::TimePoint(std::chrono::nanoseconds(time.nanoseconds())));
           //tf2::timeFromSec(time.nanoseconds()/1000000000.0));
           //transform);
 

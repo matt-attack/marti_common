@@ -119,8 +119,8 @@ int main(int argc, char * argv[])
 
   auto node = rclcpp::Node::make_shared("nodelet_cli");
   auto client = node->create_client<swri_roscpp::srv::LoadNode>(manager_name+"/load_node");
-  using namespace std::chrono_literals;
-  while (!client->wait_for_service(1s)) 
+  //using namespace std::chrono_literals;
+  while (!client->wait_for_service(std::chrono::duration<int64_t, std::milli>(1000)))//1s)) 
   {
     if (!rclcpp::ok()) 
     {

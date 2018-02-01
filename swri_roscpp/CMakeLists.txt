@@ -9,7 +9,7 @@ project(swri_roscpp)
 
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD 11)
 endif()
 
 find_package(ament_cmake REQUIRED)
@@ -20,6 +20,7 @@ find_package(rcutils REQUIRED)
 find_package(rmw_fastrtps_cpp REQUIRED)
 find_package(rosidl_cmake REQUIRED)
 find_package(rosgraph_msgs REQUIRED)
+find_package(swri_yaml_util REQUIRED)
 
 set(INCLUDE_DIRS include ${${BUILD_DEPS}_INCLUDE_DIRS}
   ${ament_cmake_INCLUDE_DIRS})
@@ -137,11 +138,16 @@ add_library(${PROJECT_NAME}_core SHARED
   src/node.cpp
   src/time.cpp
 )
+rosidl_target_interfaces(${PROJECT_NAME}_core
+  ${PROJECT_NAME} 
+  rosidl_typesupport_cpp
+)
 ament_target_dependencies(${PROJECT_NAME}_core
   ${PROJECT_NAME}
   rclcpp
   rmw_fastrtps_cpp
   rosgraph_msgs
+  swri_yaml_util
 )
 target_link_libraries(${PROJECT_NAME}_core ${LIBS})
 
