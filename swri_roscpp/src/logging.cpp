@@ -21,7 +21,7 @@ namespace swri
         int level, const char * name, const char * format, va_list * args) -> void
         {
           // output normally if we are at the correct level
-          if (level > RCUTILS_LOG_SEVERITY_INFO)
+          if (level >= RCUTILS_LOG_SEVERITY_INFO)
           {
             rcutils_logging_console_output_handler(location, level, name, format, args);
           }

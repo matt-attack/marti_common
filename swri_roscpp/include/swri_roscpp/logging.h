@@ -67,7 +67,7 @@
   do { \
     if (!(cond)) { \
       ROS_FATAL("ASSERTION FAILED\n\tfile = %s\n\tline = %d\n\tcond = %s\n", __FILE__, __LINE__, #cond); \
-      ROS_ISSUE_BREAK() \
+      /*ROS_ISSUE_BREAK()*/ \
     } \
   } while (false)
 #else

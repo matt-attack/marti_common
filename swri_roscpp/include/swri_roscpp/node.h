@@ -37,7 +37,10 @@
 
 #include <swri_roscpp/srv/interrogate.hpp>
 
-#include <swri_yaml_util/yaml_util.h>
+namespace YAML
+{
+class Node;
+}
 
 #define STRINGIZE(x) typeid(x).name()
 namespace swri

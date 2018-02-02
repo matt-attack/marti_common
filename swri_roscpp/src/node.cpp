@@ -5,6 +5,8 @@
 #include "rmw_fastrtps_cpp/get_participant.hpp"
 #include "rmw_fastrtps_cpp/get_subscriber.hpp"
 
+#include <swri_yaml_util/yaml_util.h>
+
 namespace swri
 {
   void Node::Initialize(int argc, char** argv, bool is_nodelet)
@@ -195,6 +197,7 @@ namespace swri
   YAML::Node get_from_name(YAML::Node root, const std::string& name)
   {
     //std::cout << "Name: " << name << "\n";
+    //std::cout << "Current:\n" << root;
     
     int sep_pos = name.find("/");
     if (name[0] >= '0' && name[0] <= '9')
@@ -237,6 +240,7 @@ namespace swri
     auto& names = params.names;
     //auto node = YAML::Load("[1, 2, 3]");
     //YAML::Node no;
+    node = YAML::Node(YAML::NodeType::Sequence);
     node[0] = YAML::Node(YAML::NodeType::Sequence);
     //node["test"] = YAML::Node(YAML::NodeType::Sequence);
     //node["test"][0] = 5;
@@ -251,6 +255,9 @@ namespace swri
       if (name.substr(0, na.length()) != na)
         continue;
 
+      if (name[na.length()] != '/')
+        continue;
+
       YAML::Node n = get_from_name(node, name.substr(na.length() + 1));
       
       if (type == rclcpp::parameter::ParameterType::PARAMETER_DOUBLE)
@@ -262,6 +269,7 @@ namespace swri
       else if (type == rclcpp::parameter::ParameterType::PARAMETER_STRING)
         n = param.as_string();
     }
+    //std::cout << "\n\n\n";
     std::cout << node;
   }
 

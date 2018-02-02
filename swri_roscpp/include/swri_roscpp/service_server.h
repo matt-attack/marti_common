@@ -41,7 +41,7 @@ namespace swri
 class ServiceServer
 {
  private:
-  boost::shared_ptr<ServiceServerImpl> impl_;
+  std::shared_ptr<ServiceServerImpl> impl_;
 
  public:
   ServiceServer();
@@ -125,7 +125,7 @@ ServiceServer::ServiceServer()
 {
   // Setup an empty implementation so that we can assume impl_ is
   // non-null and avoid a lot of unnecessary NULL checks.
-  impl_ = boost::make_shared<ServiceServerImpl>();
+  impl_ = std::make_shared<ServiceServerImpl>();
 }
 
 template<class S, class MReq, class MRes, class T>
@@ -135,7 +135,7 @@ void ServiceServer::setup(swri::Node* nh,
                              void(T::*srv_func)(const MReq, MRes),
                              T *obj)
 {
-  impl_ = boost::shared_ptr<ServiceServerImpl>(
+  impl_ = std::shared_ptr<ServiceServerImpl>(
     new TypedServiceServerImpl<S, MReq, MRes, T>(
       nh, service, srv_func, obj));
 }
@@ -298,14 +298,14 @@ void ServiceServer::appendDiagnostics(
 }
 
 template <class S, class MReq, class MRes, class T>
-ServiceServer&& service(swri::Node* nh,
+ServiceServer service(swri::Node* nh,
                         const std::string &service,
                         void(T::*srv_func)(const MReq, MRes),
                         T *obj)
 {
   auto srv = ServiceServer();//nh, service, srv_func, obj);
   srv.setup<S, MReq, MRes, T>(nh, service, srv_func, obj);
-  return std::move(srv);
+  return srv;
 }
 }  // namespace swri
 #endif  // SWRI_ROSCPP_SERVICE_SERVER_H_
