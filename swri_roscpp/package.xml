@@ -19,6 +19,8 @@
   <test_depend>rostest</test_depend>
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
+  <depend>rosgraph_msgs</depend>
+  <depend>swri_yaml_util</depend>
   <export><build_type>ament_cmake</build_type>
   </export>
     </package>
