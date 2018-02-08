@@ -81,9 +81,9 @@ namespace swri_transform_util
     if (!tf)
     {
       // Hack for TF2 bug...
-      boost::uuids::random_generator gen;
-      handle_ = rclcpp::Node::make_shared("transform_listener"+
-         boost::uuids::to_string(gen()).substr(0,7));
+      //boost::uuids::random_generator gen;
+      handle_ = handle;//rclcpp::Node::make_shared("transform_listener"+
+         //boost::uuids::to_string(gen()).substr(0,7));
       tf_buffer_ = std::make_shared<tf2_ros::Buffer>();
       tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, handle_, true);
     }

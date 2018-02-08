@@ -136,7 +136,7 @@ class TypedServiceServerImpl : public ServiceServerImpl
   {
     node_ = nh;
     unmapped_service_ = service;
-    mapped_service_ = service;//nh.resolveName(service);
+    mapped_service_ = nh->ResolveName(service);//nh.resolveName(service);
 
     if (unmapped_service_ == mapped_service_) {
       ROS_INFO("Serving to '%s'.", mapped_service_.c_str());

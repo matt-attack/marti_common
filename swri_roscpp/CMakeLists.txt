@@ -163,6 +163,7 @@ install(TARGETS
   nodelet_manager
   nodelet
   node_info
+  topic_info
   #subscriber_test latched_subscriber_test param_example
   ARCHIVE
   DESTINATION lib
