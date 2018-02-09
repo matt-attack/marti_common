@@ -80,15 +80,17 @@ class SubscriberImpl
 
     message_count_++;
 
-    rclcpp::Duration latency = now - stamp;
-    if (message_count_ == 1) {
-      min_latency_ = latency;
-      max_latency_ = latency;
-      total_latency_ = latency;
-    } else {
-      min_latency_ = std::min(min_latency_, latency);
-      max_latency_ = std::max(max_latency_, latency);
-      total_latency_ = total_latency_ + latency;
+    if (stamp.nanoseconds() != 0) {
+      rclcpp::Duration latency = now - stamp;
+      if (message_count_ == 1) {
+        min_latency_ = latency;
+        max_latency_ = latency;
+        total_latency_ = latency;
+      } else {
+        min_latency_ = std::min(min_latency_, latency);
+        max_latency_ = std::max(max_latency_, latency);
+        total_latency_ = total_latency_ + latency;
+      }
     }
 
     if (message_count_ > 1) {

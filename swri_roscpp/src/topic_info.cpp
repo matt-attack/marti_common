@@ -136,7 +136,7 @@ int main(int argc, char * argv[])
   std::cout << "\nPublishers:\n";
   for (auto pub: publishers)
   {
-    std::cout << " " << pub.first << " (" << pub.second << "\n";
+    std::cout << " " << pub.first << " (" << pub.second << ")\n";
   }
 
   rclcpp::shutdown();
