@@ -45,6 +45,26 @@
 #define ROS_INFO_THROTTLE(rate, ...) RCLCPP_INFO(swri::get_logger(), __VA_ARGS__)
 #define ROS_DEBUG_THROTTLE(rate, ...) RCLCPP_INFO(swri::get_logger(), __VA_ARGS__)
 
+#define ROS_ERROR_ONCE(...) RCLCPP_ERROR(swri::get_logger(), __VA_ARGS__)
+#define ROS_WARN_ONCE(...) RCLCPP_WARN(swri::get_logger(), __VA_ARGS__)
+#define ROS_INFO_ONCE(...) RCLCPP_INFO(swri::get_logger(), __VA_ARGS__)
+#define ROS_DEBUG_ONCE(...) RCLCPP_INFO(swri::get_logger(), __VA_ARGS__)
+
+#define ROS_INFO_STREAM(args) \
+  do { \
+    std::stringstream s; \
+    s << args; \
+    RCLCPP_INFO(swri::get_logger(), "%s", s.str().c_str()); \
+  } \
+  while (0)
+
+#define ROS_DEBUG_STREAM(args) \
+  do { \
+    std::stringstream s; \
+    s << args; \
+    RCLCPP_DEBUG(swri::get_logger(), "%s", s.str().c_str()); \
+  } \
+  while (0)
 
 #define ROS_WARN_STREAM(args) \
   do { \

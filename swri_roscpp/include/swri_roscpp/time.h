@@ -36,6 +36,8 @@ namespace swri
 
 double toSec(const rclcpp::Time& time);
 double toSec(const rclcpp::Duration& duration);
+rclcpp::Duration Duration(double sec);
+rclcpp::Time Time(double sec);
 
 extern const rclcpp::Time TIME_MAX;
 extern const rclcpp::Time TIME_MIN;
@@ -44,4 +46,9 @@ extern const rclcpp::Duration DURATION_MAX;
 extern const rclcpp::Duration DURATION_MIN;
 
 }  // namespace swri
+
+std::ostream& operator<<(std::ostream& stream, const rclcpp::Time& t);
+
+std::ostream& operator<<(std::ostream& stream, const rclcpp::Duration& d);
+
 #endif  // SWRI_ROSCPP_TIME_H_

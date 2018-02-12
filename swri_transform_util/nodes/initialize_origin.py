@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2013-2017, Southwest Research Institute® (SwRI®)
@@ -104,13 +104,13 @@ _frame_id = ""
 def navsatfix_callback(data):#, (frame_id, pub, sub)):
     if data.status.status == -1:
         # This fix is invalid, ignore it and wait until we get a valid one
-        print("Got invalid fix.  Waiting for a valid one...")
+        _node.get_logger().info("Got invalid fix.  Waiting for a valid one...")
         return
     global _origin
     global _sub
     global _pub
     global _frame_id
-    print("Got NavSat message. Setting origin and unsubscribing from NavSat.")
+    _node.get_logger().info("Got NavSat message. Setting origin and unsubscribing from NavSat.")
     _sub = None#.unregister()
     if _origin is None:
         _origin = make_origin_msg(_frame_id,
@@ -122,7 +122,7 @@ def navsatfix_callback(data):#, (frame_id, pub, sub)):
 def gps_callback(data):
     if data.status.status == -1:
         # This fix is invalid, ignore it and wait until we get a valid one
-        print("Got invalid fix.  Waiting for a valid one...")
+        _node.get_logger().info("Got invalid fix.  Waiting for a valid one...")
         return
     global _gps_fix
 
@@ -168,114 +168,21 @@ def gps_callback(data):
 #
 #     diagnostic.status.append(status)
 #     return diagnostic
+_node = None
 _sub = None
 def initialize_origin():
     rclpy.init()
     global _origin
-    node = Node("initialize_origin")#rospy.init_node('initialize_origin', anonymous=True)
+    global _node
+    _node = Node("initialize_origin")#rospy.init_node('initialize_origin', anonymous=True)
 
     ros_distro = "ardent"#os.environ.get('ROS_DISTRO')
 
-    #if not ros_distro:
-    #    rospy.logerror('ROS_DISTRO environment variable was not set.')
-    #    exit(1)
-
     if ros_distro == 'indigo':
         print("")
-        # ROS Indigo uses the GPSFix message 
-        # global _origin_pub
-        # global _local_xy_frame
-        # _origin_pub = rospy.Publisher('/local_xy_origin', GPSFix, latch=True, queue_size=2)
-        #
-        # diagnostic_pub = rospy.Publisher('/diagnostics', DiagnosticArray, queue_size=2)
-        #
-        # local_xy_origin = rospy.get_param('~local_xy_origin', 'auto')
-        # _local_xy_frame = rospy.get_param('~local_xy_frame', 'map')
-        # _local_xy_frame_identity = rospy.get_param('~local_xy_frame_identity', _local_xy_frame + "__identity")
-        #
-        # if local_xy_origin == "auto":
-        #     global _sub
-        #     _sub = rospy.Subscriber("gps", GPSFix, gps_callback)
-        # else:
-        #     parse_origin(local_xy_origin)
-        #
-        # if len(_local_xy_frame):
-        #     tf_broadcaster = tf.TransformBroadcaster()
-        # else:
-        #     tf_broadcaster = None
-        #
-        # hw_id = rospy.get_param('~hw_id', 'none')
-        #
-        # while not rospy.is_shutdown():
-        #     if tf_broadcaster:
-        #         # Publish transform involving map (to an anonymous unused
-        #         # frame) so that TransformManager can support /tf<->/wgs84
-        #         # conversions without requiring additional nodes.
-        #         tf_broadcaster.sendTransform(
-        #             (0, 0, 0),
-        #             (0, 0, 0, 1),
-        #             rospy.Time.now(),
-        #             _local_xy_frame_identity, _local_xy_frame)
-        #
-        #     if _gps_fix == None:
-        #         diagnostic = DiagnosticArray()
-        #         diagnostic.header.stamp = rospy.Time.now()
-        #
-        #         status = DiagnosticStatus()
-        #
-        #         status.name = "LocalXY Origin"
-        #         status.hardware_id = hw_id
-        #
-        #         status.level = DiagnosticStatus.ERROR
-        #         status.message = "No Origin"
-        #
-        #         diagnostic.status.append(status)
-        #
-        #         diagnostic_pub.publish(diagnostic)
-        #     else:
-        #         _origin_pub.publish(_gps_fix) # Publish this at 1Hz for bag convenience
-        #         diagnostic = DiagnosticArray()
-        #         diagnostic.header.stamp = rospy.Time.now()
-        #
-        #         status = DiagnosticStatus()
-        #
-        #         status.name = "LocalXY Origin"
-        #         status.hardware_id = hw_id
-        #
-        #         if local_xy_origin == 'auto':
-        #             status.level = DiagnosticStatus.OK
-        #             status.message = "Has Origin (auto)"
-        #         else:
-        #             status.level = DiagnosticStatus.WARN
-        #             status.message = "Origin is static (non-auto)"
-        #
-        #         value0 = KeyValue()
-        #         value0.key = "Origin"
-        #         value0.value = _gps_fix.status.header.frame_id
-        #         status.values.append(value0)
-        #
-        #         value1 = KeyValue()
-        #         value1.key = "Latitude"
-        #         value1.value = "%f" % _gps_fix.latitude
-        #         status.values.append(value1)
-        #
-        #         value2 = KeyValue()
-        #         value2.key = "Longitude"
-        #         value2.value = "%f" % _gps_fix.longitude
-        #         status.values.append(value2)
-        #
-        #         value3 = KeyValue()
-        #         value3.key = "Altitude"
-        #         value3.value = "%f" % _gps_fix.altitude
-        #         status.values.append(value3)
-        #
-        #         diagnostic.status.append(status)
-        #
-        #         diagnostic_pub.publish(diagnostic)
-        #     rospy.sleep(1.0)
     else:
         # ROS distros later than Indigo use NavSatFix
-        origin_pub = node.create_publisher(PoseStamped, '/local_xy_origin')#, latch=True, queue_size=2)
+        origin_pub = _node.create_publisher(PoseStamped, '/local_xy_origin')#, latch=True, queue_size=2)
         global _pub
         _pub = origin_pub
         #diagnostic_pub = rospy.Publisher('/diagnostics', DiagnosticArray, queue_size=2)
@@ -283,11 +190,11 @@ def initialize_origin():
         print('Local XY origin is "' + origin_name + '"')
         origin_frame_id = "/far_field"#rospy.get_param(rospy.search_param('local_xy_frame'), 'map')
         origin_frame_identity = "/far_field__identity"#rospy.get_param('~local_xy_frame_identity', origin_frame_id + "__identity")
-        print('Local XY frame ID is "' + origin_frame_id + '"')
+        _node.get_logger().info('Local XY frame ID is "' + origin_frame_id + '"')
         global _frame_id
         _frame_id = origin_frame_id
         if len(origin_frame_id):
-            tf_broadcaster = node.create_publisher(TFMessage, "/tf")# tf.TransformBroadcaster()
+            tf_broadcaster = _node.create_publisher(TFMessage, "/tf")# tf.TransformBroadcaster()
         else:
             tf_broadcaster = None
     
@@ -300,36 +207,36 @@ def initialize_origin():
                 origin_name = "auto"
         if origin_name == "auto":
             global _sub
-            _sub = node.create_subscription(NavSatFix, "/localization/gps", navsatfix_callback)
+            _sub = _node.create_subscription(NavSatFix, "/localization/gps", navsatfix_callback)
             #sub.impl.add_callback(navsatfix_callback, (origin_frame_id, origin_pub, sub))
-            #rospy.loginfo('Subscribed to NavSat on ' + sub.resolved_name)
+            _node.get_logger().info('Subscribed to NavSat on ' + "/localization/gps")
         while rclpy.ok():#not rospy.is_shutdown():
-            if tf_broadcaster:
+            #if tf_broadcaster:
                 # Publish transform involving map (to an anonymous unused
                 # frame) so that TransformManager can support /tf<->/wgs84
                 # conversions without requiring additional nodes.
-                tf = TFMessage()
-                ts = TransformStamped()
-                ts.header.stamp.sec = 2147000000
-                ts.header.frame_id = origin_frame_id
-                ts.transform.translation.x = 0.0
-                ts.transform.translation.y = 0.0
-                ts.transform.translation.z = 0.0
-                ts.transform.rotation.x = 0.0
-                ts.transform.rotation.y = 0.0
-                ts.transform.rotation.z = 0.0
-                ts.transform.rotation.w = 1.0
-                #ts.header.stamp
-                ts.child_frame_id = origin_frame_identity
-                tf.transforms.append(ts)
-                tf_broadcaster.publish(tf)
+                # tf = TFMessage()
+                # ts = TransformStamped()
+                # ts.header.stamp.sec = 2147000000
+                # ts.header.frame_id = origin_frame_id
+                # ts.transform.translation.x = 0.0
+                # ts.transform.translation.y = 0.0
+                # ts.transform.translation.z = 0.0
+                # ts.transform.rotation.x = 0.0
+                # ts.transform.rotation.y = 0.0
+                # ts.transform.rotation.z = 0.0
+                # ts.transform.rotation.w = 1.0
+                # #ts.header.stamp
+                # ts.child_frame_id = origin_frame_identity
+                # tf.transforms.append(ts)
+                # tf_broadcaster.publish(tf)
                 #print("publishing")
                 #tf_broadcaster.sendTransform(
                 #    (0, 0, 0),
                 #    (0, 0, 0, 1),
                 #    rospy.Time.now(),
                 #    origin_frame_identity, origin_frame_id)
-            rclpy.spin_once(node, timeout_sec = 1.0)
+            rclpy.spin_once(_node, timeout_sec = 1.0)
             #diagnostic_pub.publish(make_diagnostic(_origin, origin_name != "auto"))
             #time.sleep(1.0)
 

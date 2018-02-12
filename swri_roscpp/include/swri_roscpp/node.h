@@ -102,7 +102,7 @@ class Node
     return pub;
   }
 
-  void get_parameter(const std::string& n, YAML::Node& node);
+  bool get_parameter(const std::string& n, YAML::Node& node);
 
  private:
   std::map<std::string, std::string> topic_type_map_;

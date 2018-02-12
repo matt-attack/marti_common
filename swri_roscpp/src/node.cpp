@@ -234,7 +234,7 @@ namespace swri
     return root[name];
   }
 
-  void Node::get_parameter(const std::string& na, YAML::Node& node)
+  bool Node::get_parameter(const std::string& na, YAML::Node& node)
   {
     auto params = nh_->list_parameters({}, 64);
     auto& names = params.names;
@@ -244,6 +244,7 @@ namespace swri
     node[0] = YAML::Node(YAML::NodeType::Sequence);
     //node["test"] = YAML::Node(YAML::NodeType::Sequence);
     //node["test"][0] = 5;
+    int count = 0;
     for (auto name: names)
     {
       rclcpp::parameter::ParameterVariant param;
@@ -258,6 +259,8 @@ namespace swri
       if (name[na.length()] != '/')
         continue;
 
+      count++;
+
       YAML::Node n = get_from_name(node, name.substr(na.length() + 1));
       
       if (type == rclcpp::parameter::ParameterType::PARAMETER_DOUBLE)
@@ -271,6 +274,7 @@ namespace swri
     }
     //std::cout << "\n\n\n";
     std::cout << node;
+    return count != 0;
   }
 
   void Node::parse_remap(const std::string& val)

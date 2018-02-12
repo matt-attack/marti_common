@@ -129,6 +129,10 @@ install(TARGETS
 install(FILES nodelet_plugins.xml
   DESTINATION share/${PROJECT_NAME})
 
+install(FILES nodes/initialize_origin.py
+  PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+  DESTINATION lib/${PROJECT_NAME})
+
 ament_export_dependencies(gps_common)
 ament_export_dependencies(swri_math_util)
 #ament_export_dependencies(geographic_msgs)

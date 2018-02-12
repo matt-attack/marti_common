@@ -385,12 +385,13 @@ class BindSubscriberImpl : public SubscriberImpl
     }
 
     callback_ = callback;
-
-    transport_hints.depth = queue_size;
+ 
+    rmw_qos_profile_t hints = transport_hints;
+    hints.depth = queue_size;
     sub_ = nh->create_subscription(mapped_topic_,
                         std::bind(&BindSubscriberImpl::handleMessage<M>,
                         this, std::placeholders::_1),
-                        transport_hints);
+                        hints);
   }
 
   // Handler for messages with headers
