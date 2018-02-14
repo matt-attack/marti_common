@@ -5,10 +5,22 @@
 #include "rmw_fastrtps_cpp/get_participant.hpp"
 #include "rmw_fastrtps_cpp/get_subscriber.hpp"
 
+#include <swri_roscpp/time.h>
 #include <swri_yaml_util/yaml_util.h>
 
 namespace swri
 {
+  static std::thread timer_updater;
+  static std::mutex timers_mutex;
+
+  struct TimerWatch
+  {
+    std::weak_ptr<rclcpp::TimerBase> timer;//timer that is set to run at crazy high rate that is only triggered one at a time
+    std::weak_ptr<rclcpp::Node> node;
+    rclcpp::Duration period;
+    rclcpp::Time last_run;
+  };
+  static std::vector<TimerWatch> timers;
   void Node::Initialize(int argc, char** argv, bool is_nodelet)
   {
     for (int i = 0; i < argc; i++)
@@ -122,11 +134,73 @@ namespace swri
         }
       }
     });
+
     //auto parameter_client = std::make_shared<rclcpp::AsyncParametersClient>(nh_);
 
     parse_arguments(argc, argv);
 
     onInit();
+  }
+
+  void Node::add_timer(std::weak_ptr<rclcpp::TimerBase> timer, double period)
+  {
+    //set up the timer updater thread
+    if (timer_updater.joinable() == false)
+    {
+      timer_updater = std::thread([]()
+      {
+        while (rclcpp::ok())
+        {
+          //ROS_INFO("Running timer loop");
+          timers_mutex.lock();
+          for (auto& t : timers)
+          {
+            //ROS_INFO("Trying to update a timer");
+            auto node = t.node.lock();
+            if (!node)
+            {
+              continue;
+            }
+            //check if any timers are ready, if so triger the node to wake up and the timer to run
+            auto timer = t.timer.lock();
+            if (!timer)
+            {
+              continue;
+            }
+            //ROS_INFO("Updating timer");
+
+            rclcpp::Time now = node->now();
+
+            if (now > t.last_run + t.period || abs(now.nanoseconds() - t.last_run.nanoseconds()) > t.period.nanoseconds()*50)
+            {
+              if (now.nanoseconds() == 0)
+              {
+                continue;
+              }
+              //ROS_INFO("Bringing it to LIFE %ld %ld", now.nanoseconds(), t.last_run.nanoseconds());
+              timer->reset();
+              t.last_run = now;
+
+              auto lock = node->get_node_base_interface()->acquire_notify_guard_condition_lock();
+              auto condition = node->get_node_base_interface()->get_notify_guard_condition();
+              rcl_trigger_guard_condition(condition);
+            }
+          }
+          timers_mutex.unlock();
+
+          //sleep for a wee bit so we dont use all the cpu, this affects granularity, but whatever
+          rclcpp::sleep_for(std::chrono::nanoseconds(100000));//sleep for 0.1 ms
+        }
+      });
+    }
+
+    // add the node to the timer list
+    timers_mutex.lock();
+    timers.push_back({timer,
+                      std::weak_ptr<rclcpp::Node>(nh_), 
+                      swri::Duration(period), 
+                      nh_->now()});
+    timers_mutex.unlock();
   }
 
   void Node::parse_arguments(int argc, char** argv)

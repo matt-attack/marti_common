@@ -75,9 +75,9 @@ class Node
   void Initialize(int argc, char** argv, bool is_nodelet = false);
 
   template< class CallbackT>
-  rclcpp::TimerBase::SharedPtr create_wall_timer(double rate, CallbackT callback)
+  rclcpp::TimerBase::SharedPtr create_wall_timer(double period, CallbackT callback)
   {
-    return nh_->create_wall_timer(std::chrono::duration<int64_t, std::micro>((int64_t)(1000000.0/rate)), callback);
+    return nh_->create_wall_timer(std::chrono::duration<int64_t, std::micro>((int64_t)(period*1000000.0)), callback);
   }
 
   template<class M, class CallbackT>
@@ -89,6 +89,35 @@ class Node
                         transport_hints);
     topic_type_map_[sub->get_topic_name()] = STRINGIZE(M);
     return sub;
+  }
+
+  template<class CallbackT>
+  rclcpp::TimerBase::SharedPtr create_timer(double period, CallbackT callback)
+  {
+    //check if we are in sim time mode, if we are not, start this as normal timer, else wall time
+    bool use_sim_time = false;
+    nh_->get_parameter_or("use_sim_time", use_sim_time, false);
+    if (use_sim_time == false)
+    {
+      return create_wall_timer(period, callback);
+    }
+
+    ROS_INFO("Creating timer for ROS_TIME since use_sim_time was enabled");
+
+    auto timer = rclcpp::WallTimer< std::function<void(rclcpp::TimerBase &)> >::make_shared(
+      std::chrono::nanoseconds(1),
+      [callback](rclcpp::TimerBase & timer)
+      {
+        //ROS_INFO("Timer callback");
+        timer.cancel();
+        callback();
+    });
+    //register the timer and make sure to cancel it
+    timer->cancel();
+    nh_->get_node_timers_interface()->add_timer(timer, nullptr);
+    add_timer(timer, period);
+    timer->cancel();
+    return timer;
   }
 
   template<class M>
@@ -111,6 +140,8 @@ class Node
   void parse_arguments(int argc, char** argv);
 
   void parse_remap(const std::string& val);
+
+  void add_timer(std::weak_ptr<rclcpp::TimerBase> timer, double period);
 
   virtual void onInit() = 0;
 };  // class Node

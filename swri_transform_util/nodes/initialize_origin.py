@@ -110,8 +110,10 @@ def navsatfix_callback(data):#, (frame_id, pub, sub)):
     global _sub
     global _pub
     global _frame_id
-    _node.get_logger().info("Got NavSat message. Setting origin and unsubscribing from NavSat.")
+    global _sub_gps
+    #_node.get_logger().info("Got NavSat message. Setting origin and unsubscribing from NavSat.")
     _sub = None#.unregister()
+    _sub_gps = None
     if _origin is None:
         _origin = make_origin_msg(_frame_id,
                                   data.latitude,
@@ -119,23 +121,31 @@ def navsatfix_callback(data):#, (frame_id, pub, sub)):
                                   data.altitude)
         _pub.publish(_origin)
 
+
 def gps_callback(data):
+    #_node.get_logger().info("Got gps");
     if data.status.status == -1:
         # This fix is invalid, ignore it and wait until we get a valid one
         _node.get_logger().info("Got invalid fix.  Waiting for a valid one...")
         return
-    global _gps_fix
 
-    if _gps_fix == None:
-        global _sub
-        #_sub.unregister()
-        _sub = None
-
-        _gps_fix = data
-        _gps_fix.header.frame_id = _local_xy_frame
-        _gps_fix.track = 90
-
-        _origin_pub.publish(_gps_fix)
+    global _origin
+    global _sub
+    global _pub
+    global _frame_id
+    global _sub_gps
+    global _node
+    #_node.get_logger().info("Got NavSat message. Setting origin and unsubscribing from NavSat.")
+    #_sub = None#.unregister()
+    #_sub_gps = None
+    if _origin is None:
+        _node.destroy_subscription(_sub_gps)
+        _node.destroy_subscription(_sub)
+        _origin = make_origin_msg(_frame_id,
+                                  data.latitude,
+                                  data.longitude,
+                                  data.altitude)
+        _pub.publish(_origin)
 
 # def make_diagnostic(origin, static_origin):
 #     diagnostic = DiagnosticArray()
@@ -170,6 +180,7 @@ def gps_callback(data):
 #     return diagnostic
 _node = None
 _sub = None
+_sub_gps = None
 def initialize_origin():
     rclpy.init()
     global _origin
@@ -207,10 +218,13 @@ def initialize_origin():
                 origin_name = "auto"
         if origin_name == "auto":
             global _sub
-            _sub = _node.create_subscription(NavSatFix, "/localization/gps", navsatfix_callback)
+            global _sub_gps
+            _sub = _node.create_subscription(NavSatFix, "/localization/fix", navsatfix_callback)
+            _sub_gps = _node.create_subscription(GPSFix, "/localization/gps", gps_callback)
             #sub.impl.add_callback(navsatfix_callback, (origin_frame_id, origin_pub, sub))
-            _node.get_logger().info('Subscribed to NavSat on ' + "/localization/gps")
+            _node.get_logger().info('Subscribed to GPSFix on ' + "/localization/gps")
         while rclpy.ok():#not rospy.is_shutdown():
+            #_node.get_logger().info("Looping");
             #if tf_broadcaster:
                 # Publish transform involving map (to an anonymous unused
                 # frame) so that TransformManager can support /tf<->/wgs84
@@ -236,7 +250,9 @@ def initialize_origin():
                 #    (0, 0, 0, 1),
                 #    rospy.Time.now(),
                 #    origin_frame_identity, origin_frame_id)
-            rclpy.spin_once(_node, timeout_sec = 1.0)
+            if _origin != None:
+                _pub.publish(_origin)
+            rclpy.spin_once(_node, timeout_sec = 2.0)
             #diagnostic_pub.publish(make_diagnostic(_origin, origin_name != "auto"))
             #time.sleep(1.0)
 
