@@ -31,6 +31,7 @@
 
 #include <rclcpp/node.hpp>
 #include <rclcpp/logging.hpp>
+#include <swri_roscpp/time.h>
 
 #include <sstream>
 
@@ -40,15 +41,68 @@
 #define ROS_DEBUG(...) RCLCPP_DEBUG(swri::get_logger(), __VA_ARGS__)
 #define ROS_FATAL(...) RCLCPP_FATAL(swri::get_logger(), __VA_ARGS__)
 
-#define ROS_ERROR_THROTTLE(rate, ...) RCLCPP_ERROR(swri::get_logger(), __VA_ARGS__)
-#define ROS_WARN_THROTTLE(rate, ...) RCLCPP_WARN(swri::get_logger(), __VA_ARGS__)
-#define ROS_INFO_THROTTLE(rate, ...) RCLCPP_INFO(swri::get_logger(), __VA_ARGS__)
-#define ROS_DEBUG_THROTTLE(rate, ...) RCLCPP_DEBUG(swri::get_logger(), __VA_ARGS__)
+//#define ROS_ERROR_THROTTLE(rate, ...) RCLCPP_ERROR(swri::get_logger(), __VA_ARGS__)
+//#define ROS_WARN_THROTTLE(rate, ...) RCLCPP_WARN(swri::get_logger(), __VA_ARGS__)
+//#define ROS_INFO_THROTTLE(rate, ...) RCLCPP_INFO(swri::get_logger(), __VA_ARGS__)
+//#define ROS_DEBUG_THROTTLE(rate, ...) RCLCPP_DEBUG(swri::get_logger(), __VA_ARGS__)
 
-#define ROS_ERROR_ONCE(...) RCLCPP_ERROR(swri::get_logger(), __VA_ARGS__)
-#define ROS_WARN_ONCE(...) RCLCPP_WARN(swri::get_logger(), __VA_ARGS__)
-#define ROS_INFO_ONCE(...) RCLCPP_INFO(swri::get_logger(), __VA_ARGS__)
-#define ROS_DEBUG_ONCE(...) RCLCPP_DEBUG(swri::get_logger(), __VA_ARGS__)
+#define ROS_ERROR_ONCE(...) RCLCPP_ERROR_ONCE(swri::get_logger(), __VA_ARGS__)
+#define ROS_WARN_ONCE(...) RCLCPP_WARN_ONCE(swri::get_logger(), __VA_ARGS__)
+#define ROS_INFO_ONCE(...) RCLCPP_INFO_ONCE(swri::get_logger(), __VA_ARGS__)
+#define ROS_DEBUG_ONCE(...) RCLCPP_DEBUG_ONCE(swri::get_logger(), __VA_ARGS__)
+
+#define NODELET_ERROR(...) RCUTILS_LOG_ERROR_NAMED(nh_->get_name(), __VA_ARGS__)
+#define NODELET_WARN(...) RCUTILS_LOG_WARN_NAMED(nh_->get_name(), __VA_ARGS__)
+#define NODELET_INFO(...) RCUTILS_LOG_INFO_NAMED(nh_->get_name(), __VA_ARGS__)
+#define NODELET_DEBUG(...) RCUTILS_LOG_DEBUG_NAMED(nh_->get_name(), __VA_ARGS__)
+
+#define ROS_ERROR_THROTTLE(period, ...) \
+  do \
+  { \
+    static rclcpp::Time last_hit(0, 0); \
+    rclcpp::Time now = swri::_logging_clock.now(); \
+    if (last_hit + swri::Duration(period) <= now) \
+    { \
+      last_hit = now; \
+      RCLCPP_ERROR(swri::get_logger(), __VA_ARGS__); \
+    } \
+  } while(false)
+
+#define ROS_WARN_THROTTLE(period, ...) \
+  do \
+  { \
+    static rclcpp::Time last_hit(0, 0); \
+    rclcpp::Time now = swri::_logging_clock.now(); \
+    if (last_hit + swri::Duration(period) <= now) \
+    { \
+      last_hit = now; \
+      RCLCPP_WARN(swri::get_logger(), __VA_ARGS__); \
+    } \
+  } while(false)
+
+#define ROS_INFO_THROTTLE(period, ...) \
+  do \
+  { \
+    static rclcpp::Time last_hit(0, 0); \
+    rclcpp::Time now = swri::_logging_clock.now(); \
+    if (last_hit + swri::Duration(period) <= now) \
+    { \
+      last_hit = now; \
+      RCLCPP_INFO(swri::get_logger(), __VA_ARGS__); \
+    } \
+  } while(false)
+
+#define ROS_DEBUG_THROTTLE(period, ...) \
+  do \
+  { \
+    static rclcpp::Time last_hit(0, 0); \
+    rclcpp::Time now = swri::_logging_clock.now(); \
+    if (last_hit + swri::Duration(period) <= now) \
+    { \
+      last_hit = now; \
+      RCLCPP_DEBUG(swri::get_logger(), __VA_ARGS__); \
+    } \
+  } while(false)
 
 #define ROS_INFO_STREAM(args) \
   do { \
@@ -98,6 +152,8 @@ namespace swri
 {
   // The node handle used for all of the loggers
   extern std::shared_ptr<rclcpp::Node> _node_handle;
+
+  extern rclcpp::Clock _logging_clock;
 
   /* Call this once in every exectuable with one of the nodes to enable easy logging */
   void setup_logging(std::shared_ptr<rclcpp::Node> ptr);

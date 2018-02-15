@@ -17,7 +17,7 @@ link_directories(${LIBRARY_DIRS})
 
 set(LIBS ${ament_cmake_LIBRARIES})
 
-add_library(${PROJECT_NAME} src/serial_port.cpp)
+add_library(${PROJECT_NAME} SHARED src/serial_port.cpp)
 target_link_libraries(${PROJECT_NAME} ${LIBS})
 
 install(DIRECTORY include/${PROJECT_NAME}/

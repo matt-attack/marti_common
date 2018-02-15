@@ -9,6 +9,8 @@ namespace swri
   std::shared_ptr<rclcpp::Node> _node_handle;
   rclcpp::Publisher<rosgraph_msgs::msg::Log>::SharedPtr _log_pub;
 
+  rclcpp::Clock _logging_clock;
+
   void setup_logging(std::shared_ptr<rclcpp::Node> ptr)
   {
     if (!_node_handle)
