@@ -79,7 +79,7 @@ int main(int argc, char * argv[])
   std::string manager_name = argc > 1 ? argv[1] : "nodelet_manager";
   auto node = rclcpp::Node::make_shared(manager_name);
   swri::setup_logging(node);
-  rclcpp::executors::SingleThreadedExecutor exec;
+  rclcpp::executors::MultiThreadedExecutor exec;
   exec.add_node(node);
 
   std::vector<class_loader::ClassLoader *> loaders;

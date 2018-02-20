@@ -34,6 +34,11 @@ namespace swri
           
           // Fill out the ros1 log message
           rosgraph_msgs::msg::Log log;
+          if (_node_handle)
+          {
+            log.header.stamp = _node_handle->now();
+          }
+
           if (level == RCUTILS_LOG_SEVERITY_DEBUG)
           {
             log.level = rosgraph_msgs::msg::Log::DEBUG;
