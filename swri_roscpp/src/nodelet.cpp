@@ -95,7 +95,7 @@ int main(int argc, char * argv[])
       {
         RCLCPP_INFO(logger, "Instantiating class %s", clazz.c_str())
         auto node = loader->createInstance<swri::Node>(clazz);
-        node->Initialize(argc-3, &argv[3], true);
+        node->Initialize(argc-3, &argv[3], false);
         exec.add_node(node->nh_);
         nodes.push_back(node);
         break;
