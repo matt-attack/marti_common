@@ -44,6 +44,10 @@ int main(int argc, char * argv[])
       std::stoul(rcutils_cli_get_option(argv, argv + argc, "--delay")));
     std::this_thread::sleep_for(delay);
   }
+  else
+  {
+    //std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+  }
 
   rclcpp::init(argc, argv);
 
@@ -117,7 +121,10 @@ int main(int argc, char * argv[])
   
   std::string manager_name = argc > 3 ? argv[3] : "nodelet_manager";
 
-  auto node = rclcpp::Node::make_shared("nodelet_cli");
+  std::string noden = argv[2];
+  std::replace(noden.begin(), noden.end(), ':', '_');
+  std::string node_name = "nodelet_cli"+noden;
+  auto node = rclcpp::Node::make_shared(node_name.c_str());
   auto client = node->create_client<swri_roscpp::srv::LoadNode>(manager_name+"/load_node");
   //using namespace std::chrono_literals;
   while (!client->wait_for_service(std::chrono::duration<int64_t, std::milli>(1000)))//1s)) 
@@ -131,6 +138,8 @@ int main(int argc, char * argv[])
     }
     RCLCPP_INFO(node->get_logger(), "Service not available, waiting again...")
   }
+
+  std::this_thread::sleep_for(std::chrono::milliseconds(1000));//give it a bit so the request goes through
 
   auto request = std::make_shared<swri_roscpp::srv::LoadNode::Request>();
   request->package_name = argv[1];
@@ -154,9 +163,16 @@ int main(int argc, char * argv[])
     }
     return 1;
   }
-  RCLCPP_INFO(
-    node->get_logger(), "Result of load_node: success = %s",
-    result.get()->success ? "true" : "false")
+  if (result.get()->success == false)
+  {
+    RCLCPP_ERROR(
+      node->get_logger(), "Nodelet failed to load!");
+  }
+  else
+  {
+    RCLCPP_INFO(
+      node->get_logger(), "Nodelet loaded successfully, exiting launcher");
+  }
 
   rclcpp::shutdown();
 

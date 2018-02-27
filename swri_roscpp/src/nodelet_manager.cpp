@@ -106,6 +106,7 @@ int main(int argc, char * argv[])
       }
      
       std::string class_name = request->plugin_name;
+      RCLCPP_INFO(node->get_logger(), "Loading class: %s", request->plugin_name.c_str());
 
       // load node plugin
       std::string library_path = base_path + "/lib/lib"+request->package_name+".so";
@@ -135,23 +136,24 @@ int main(int argc, char * argv[])
         if (clazz == class_name) 
         {
           RCLCPP_INFO(node->get_logger(), "Instantiate class %s", clazz.c_str())
-          auto node = loader->createInstance<swri::Node>(clazz);
+          auto new_node = loader->createInstance<swri::Node>(clazz);
           char** strings = new char*[request->parameters.size()];
           for (int i = 0; i < request->parameters.size(); i++)
           {
             strings[i] = new char[request->parameters[i].length()+1];
             strcpy(strings[i], request->parameters[i].c_str());
           }
-          node->Initialize(request->parameters.size(), strings, true);
+          new_node->Initialize(request->parameters.size(), strings, true);
           for (int i = 0; i < request->parameters.size(); i++)
           {
             delete[] strings[i];
           }
           delete[] strings;
-          exec.add_node(node->nh_);
-          nodes.push_back(node);
+          exec.add_node(new_node->nh_);
+          nodes.push_back(new_node);
           loaders.push_back(loader);
           response->success = true;
+          RCLCPP_INFO(node->get_logger(), "Finished loading class: %s", clazz.c_str());
           return;
         }
       }
