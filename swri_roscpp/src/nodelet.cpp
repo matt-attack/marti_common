@@ -99,7 +99,7 @@ int main(int argc, char * argv[])
       {
         RCLCPP_INFO(logger, "Instantiating class %s", clazz.c_str())
         auto node = loader->createInstance<swri::Node>(clazz);
-        node->Initialize(argc-3, &argv[3], false);
+        node->Initialize(argc-4, &argv[4], false);
         exec.add_node(node->nh_);
         nodes.push_back(node);
         break;
@@ -119,7 +119,7 @@ int main(int argc, char * argv[])
     return 0;
   }
   
-  std::string manager_name = argc > 3 ? argv[3] : "nodelet_manager";
+  std::string manager_name = argc > 3 ? argv[3] : "standalone";
 
   std::string noden = argv[2];
   std::replace(noden.begin(), noden.end(), ':', '_');
@@ -136,10 +136,11 @@ int main(int argc, char * argv[])
         "Interrupted while waiting for the service. Exiting.")
       return 1;
     }
-    RCLCPP_INFO(node->get_logger(), "Service not available, waiting again...")
+    RCLCPP_INFO(node->get_logger(), "Nodelet manager '%s' service not available, waiting again...",
+      manager_name.c_str())
   }
 
-  std::this_thread::sleep_for(std::chrono::milliseconds(1000));//give it a bit so the request goes through
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));//give it a bit so the request goes through
 
   auto request = std::make_shared<swri_roscpp::srv::LoadNode::Request>();
   request->package_name = argv[1];
