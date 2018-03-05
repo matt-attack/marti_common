@@ -153,13 +153,13 @@ int main(int argc, char * argv[])
   std::cout << "Subscribers:\n";
   for (auto sub: subscribers)
   {
-    std::cout << " " << sub.first << " (" << sub.second << ")\n";
+    std::cout << " " << sub.node << " (" << sub.type << ")\n";
   }
 
   std::cout << "\nPublishers:\n";
   for (auto pub: publishers)
   {
-    std::cout << " " << pub.first << " (" << pub.second << ")\n";
+    std::cout << " " << pub.node << " (" << pub.type << ")\n";
   }
 
   rclcpp::shutdown();
