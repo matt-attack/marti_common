@@ -54,7 +54,7 @@ class TimerImpl
 
   void tickBegin()
   {
-    tick_begin_wall_ = nh_->now();//ros::WallTime::now();
+    tick_begin_wall_ = nh_->now();
 
     rclcpp::Time now = nh_->now();
     if (ticks_ > 0) {
@@ -74,7 +74,7 @@ class TimerImpl
 
   void tickEnd()
   {
-    rclcpp::Time end_time_ = nh_->now();//ros::WallTime::now();
+    rclcpp::Time end_time_ = nh_->now();
     rclcpp::Duration duration = end_time_ - tick_begin_wall_;
     total_durations_ = total_durations_ + duration;
     if (ticks_ == 0) {
@@ -121,16 +121,16 @@ class TimerImpl
   rclcpp::Duration meanPeriod() const
   {
     if (ticks_ < 2) {
-      return rclcpp::Duration(1000000000,0);
+      return swri::DURATION_MAX;
     } else {
-      return rclcpp::Duration((total_periods_.nanoseconds()/1000000000) / (ticks_ - 1));
+      return swri::Duration(swri::toSec(total_periods_) / (ticks_ - 1));
     }
   }
   
   rclcpp::Duration minPeriod() const
   {
     if (ticks_ < 2) {
-      return rclcpp::Duration(1000000000,0);
+      return swri::DURATION_MAX;
     } else {
       return min_period_;
     }
@@ -139,7 +139,7 @@ class TimerImpl
   rclcpp::Duration maxPeriod() const
   {
     if (ticks_ < 2) {
-      return rclcpp::Duration(1000000000,0);//DURATION_MAX;
+      return swri::DURATION_MAX;
     } else {
       return max_period_;
     }
@@ -150,7 +150,7 @@ class TimerImpl
     if (ticks_ == 0) {
       return rclcpp::Duration(0,0);
     } else {
-      return rclcpp::Duration((total_durations_.nanoseconds()/1000000000) / ticks_);
+      return swri::Duration(swri::toSec(total_durations_) / ticks_);
     }
   }
   

@@ -1,4 +1,31 @@
-
+// *****************************************************************************
+//
+// Copyright (c) 2018, Southwest Research Institute® (SwRI®)
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//     * Redistributions of source code must retain the above copyright
+//       notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in the
+//       documentation and/or other materials provided with the distribution.
+//     * Neither the name of Southwest Research Institute® (SwRI®) nor the
+//       names of its contributors may be used to endorse or promote products
+//       derived from this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL SOUTHWEST RESEARCH INSTITUTE BE LIABLE FOR ANY
+// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+// (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+// ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// *****************************************************************************
 
 #include <chrono>
 #include <memory>
@@ -125,7 +152,9 @@ int main(int argc, char * argv[])
   std::replace(noden.begin(), noden.end(), ':', '_');
   std::string node_name = "nodelet_cli"+noden;
   auto node = rclcpp::Node::make_shared(node_name.c_str());
-  auto client = node->create_client<swri_roscpp::srv::LoadNode>(manager_name+"/load_node");
+  rmw_qos_profile_t prof = rmw_qos_profile_services_default;
+  prof.depth = 1;
+  auto client = node->create_client<swri_roscpp::srv::LoadNode>(manager_name+"/load_node", prof);
   //using namespace std::chrono_literals;
   while (!client->wait_for_service(std::chrono::duration<int64_t, std::milli>(1000)))//1s)) 
   {
@@ -138,33 +167,47 @@ int main(int argc, char * argv[])
     }
     RCLCPP_INFO(node->get_logger(), "Nodelet manager '%s' service not available, waiting again...",
       manager_name.c_str())
+    rclcpp::spin_some(node);
   }
 
-  std::this_thread::sleep_for(std::chrono::milliseconds(100));//give it a bit so the request goes through
+  //std::this_thread::sleep_for(std::chrono::milliseconds(100));//give it a bit so the request goes through
 
   auto request = std::make_shared<swri_roscpp::srv::LoadNode::Request>();
   request->package_name = argv[1];
   request->plugin_name = argv[2];
   for (int i = 4; i < argc; i++)
   {
-    RCLCPP_INFO(node->get_logger(), "Sending parameter: %s", argv[i]);
+    //RCLCPP_INFO(node->get_logger(), "Sending parameter: %s", argv[i]);
     request->parameters.push_back(argv[i]);
   }
 
-  RCLCPP_INFO(node->get_logger(), "Sending request...")
+  RCLCPP_INFO(node->get_logger(), "Sending request...");
   auto result = client->async_send_request(request);
-  RCLCPP_INFO(node->get_logger(), "Waiting for response...")
-  if (rclcpp::spin_until_future_complete(node, result) !=
-      rclcpp::executor::FutureReturnCode::SUCCESS)
+  RCLCPP_INFO(node->get_logger(), "Waiting for response...");
+  while(true)
   {
-    RCLCPP_ERROR(node->get_logger(), "Interrupted while waiting for response. Exiting.")
-    if (!rclcpp::ok()) 
-    {
-      return 0;
+    auto ret = rclcpp::spin_until_future_complete(node, result, std::chrono::milliseconds(1000));
+    if (ret == rclcpp::executor::FutureReturnCode::SUCCESS) {
+      break;
     }
-    return 1;
+    else if (ret != rclcpp::executor::FutureReturnCode::TIMEOUT)
+    {
+      RCLCPP_ERROR(node->get_logger(), "Interrupted while waiting for response. Exiting.");
+      if (!rclcpp::ok()) 
+      {
+        return 0;
+      }
+      return 1;
+    }
+    else
+    {
+      RCLCPP_INFO(node->get_logger(), "Return code TIMEOUT");
+    }
+
+    RCLCPP_INFO(node->get_logger(), "Response not available, waiting again...");
   }
-  if (result.get()->success == false)
+  bool success = result.get()->success;
+  if (success == false)
   {
     RCLCPP_ERROR(
       node->get_logger(), "Nodelet failed to load!");
@@ -174,8 +217,10 @@ int main(int argc, char * argv[])
     RCLCPP_INFO(
       node->get_logger(), "Nodelet loaded successfully, exiting launcher");
   }
-
+  //node.reset();
   rclcpp::shutdown();
 
-  return result.get()->success ? 0 : 1;
+  printf("Finished nodelet shutdown");
+
+  return success ? 0 : 1;
 }

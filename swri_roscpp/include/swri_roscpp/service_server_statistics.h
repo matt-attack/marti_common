@@ -86,8 +86,7 @@ rclcpp::Duration ServiceServerStatistics::meanTime() const
   if (servings_ == 0) {
     return rclcpp::Duration(0, 0);
   } else {
-    double frac = swri::toSec(total_time_) / servings_;
-    return rclcpp::Duration((int)frac, fmod(frac, 1)*1000000000.0);
+    return swri::Duration(swri::toSec(total_time_) / servings_);
   }
 }
 

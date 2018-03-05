@@ -1,4 +1,31 @@
-
+// *****************************************************************************
+//
+// Copyright (c) 2018, Southwest Research Institute® (SwRI®)
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//     * Redistributions of source code must retain the above copyright
+//       notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in the
+//       documentation and/or other materials provided with the distribution.
+//     * Neither the name of Southwest Research Institute® (SwRI®) nor the
+//       names of its contributors may be used to endorse or promote products
+//       derived from this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL SOUTHWEST RESEARCH INSTITUTE BE LIABLE FOR ANY
+// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+// (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+// ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// *****************************************************************************
 
 #include <swri_roscpp/node.h>
 
@@ -13,6 +40,7 @@ namespace swri
   static std::thread timer_updater;
   static std::mutex timers_mutex;
 
+  // Structure containing info about each ROS time based timer we need to update
   struct TimerWatch
   {
     std::weak_ptr<rclcpp::TimerBase> timer;//timer that is set to run at crazy high rate that is only triggered one at a time
@@ -23,8 +51,10 @@ namespace swri
   static std::vector<TimerWatch> timers;
   void Node::Initialize(int argc, char** argv, bool is_nodelet)
   {
+    // Scan the arguments for the node's name and namespace
     for (int i = 0; i < argc; i++)
     {
+      //ROS_ERROR("Got arg: %s", argv[i]);
       std::string val = argv[i];
       if (val.find(":=") == -1 || val.length() < 4)
         continue;
@@ -45,14 +75,15 @@ namespace swri
         continue;
       }
     }
-
+    
+    // Create the internal node and use it to setup logging
     nh_ = std::make_shared<rclcpp::Node>(node_name_, node_namespace_, is_nodelet);
     swri::setup_logging(nh_);
 
     // host a parameter service for each node
     //parameter_service_ = std::make_shared<rclcpp::ParameterService>(nh_);
 
-    info_service_ = nh_->create_service<swri_roscpp::srv::Interrogate>(
+    /*info_service_ = nh_->create_service<swri_roscpp::srv::Interrogate>(
     node_name_+"/info",
     [this](
       const std::shared_ptr<rmw_request_id_t>,
@@ -114,15 +145,15 @@ namespace swri
         }
       }
 
-      /*for (auto ii: subs_)
-      {
-        if (auto pt = ii.lock())
-        {
-          response->subscriptions.push_back(pt->get_topic_name());
-          auto res = this->topic_type_map_[pt->get_topic_name()];
-          response->subscription_types.push_back(res);
-        }
-      }*/
+      //for (auto ii: subs_)
+      //{
+      //  if (auto pt = ii.lock())
+      //  {
+      //    response->subscriptions.push_back(pt->get_topic_name());
+      //    auto res = this->topic_type_map_[pt->get_topic_name()];
+       //   response->subscription_types.push_back(res);
+      //  }
+      //}
 
       for (auto ii: pubs_)
       {
@@ -133,54 +164,65 @@ namespace swri
           response->publication_types.push_back(res);
         }
       }
-    });
+    });*/
 
     //auto parameter_client = std::make_shared<rclcpp::AsyncParametersClient>(nh_);
 
     parse_arguments(argc, argv);
+    //ROS_ERROR("Adding Callback"); 
 
-    onInit();
+    if (is_nodelet)
+    {
+      startup_timer_ = create_wall_timer(4.0, [this]() { ROS_ERROR("Timer Callback"); this->onInit(); this->startup_timer_->cancel(); ROS_ERROR("Finished Timer Callback"); });
+    }
+    else
+    {
+      onInit();
+    }
   }
 
   void Node::add_timer(std::weak_ptr<rclcpp::TimerBase> timer, double period)
   {
-    //set up the timer updater thread
+    timers_mutex.lock();
+
+    // Set up the timer updater thread if we haven't already
     if (timer_updater.joinable() == false)
     {
       timer_updater = std::thread([]()
       {
         while (rclcpp::ok())
         {
-          //ROS_INFO("Running timer loop");
+          // For each timer check if it is ready to run and execute it if so
           timers_mutex.lock();
           for (auto& t : timers)
           {
-            //ROS_INFO("Trying to update a timer");
             auto node = t.node.lock();
             if (!node)
             {
               continue;
             }
-            //check if any timers are ready, if so triger the node to wake up and the timer to run
+            // Check if any timers are ready, if so triger the node to wake up and the timer to run
             auto timer = t.timer.lock();
             if (!timer)
             {
               continue;
             }
-            //ROS_INFO("Updating timer");
 
             rclcpp::Time now = node->now();
 
+            // Run if we have exceded our period or time has jumped substantially
             if (now > t.last_run + t.period || abs(now.nanoseconds() - t.last_run.nanoseconds()) > t.period.nanoseconds()*50)
             {
+              // Don't run on startup
               if (now.nanoseconds() == 0)
               {
                 continue;
               }
-              //ROS_INFO("Bringing it to LIFE %ld %ld", now.nanoseconds(), t.last_run.nanoseconds());
+              // Reset the timer so it will run when we wake it up
               timer->reset();
               t.last_run = now;
 
+              // Actually wake up the node from any spin loops so it can run the callback
               auto lock = node->get_node_base_interface()->acquire_notify_guard_condition_lock();
               auto condition = node->get_node_base_interface()->get_notify_guard_condition();
               rcl_trigger_guard_condition(condition);
@@ -195,7 +237,6 @@ namespace swri
     }
 
     // add the node to the timer list
-    timers_mutex.lock();
     timers.push_back({timer,
                       std::weak_ptr<rclcpp::Node>(nh_), 
                       swri::Duration(period), 
@@ -213,30 +254,33 @@ namespace swri
         continue;
       }
      
+      // Handle parsing remappings which are given by ;= instead of :=
       if (val.find(";=") != -1)
       {
         parse_remap(val);
         continue;
       }
 
+      // Don't bother parsing things that dont have a :=
       if (val.find(":=") == -1)
       {
         continue;
       }
 
+      // Get the parameter name and value by splitting the string at the :=
       int split = val.find(":=");
       std::string name = val.substr(0, split);
       std::string value = val.substr(split+2);
-      ROS_INFO("Set param '%s' with value '%s'", name.c_str(), value.c_str());
+      //ROS_INFO("Set param '%s' with value '%s'", name.c_str(), value.c_str());
 
-      // Check for special case names
+      // Check for special names and ignore them as they were already handled
       if (name == "__node" || name == "__ns")
       {
         //node_name_ = name;
         continue;
       }
 
-      // Check which type it is
+      // Set the parameter and its type based on the value string
       if (value == "true")
       {
         //ROS_INFO("Was bool");
@@ -249,6 +293,7 @@ namespace swri
       }
       else if (value[0] == '-' || (value[0] >= '0' && value[0] <= '9'))
       {
+        // If it has a . it is a float, if it does not, it is an integer
         if (value.find('.') == std::string::npos)//integer
         {
           //ROS_INFO("Was int");
@@ -273,18 +318,12 @@ namespace swri
     //std::cout << "Name: " << name << "\n";
     //std::cout << "Current:\n" << root;
     
+    // Get the position of the / separator so we know if it is a namespace
     int sep_pos = name.find("/");
     if (name[0] >= '0' && name[0] <= '9')
     {
       //its a sequence
       int i = std::atoi(name.c_str());
-      //std::cout << "Was seq i = " << i << "\n";
-      /*if (!root[i])
-      {
-        YAML::Node n(YAML::NodeType::Map);
-        //n["_t"] = 5;
-        root[i] = n;
-      }*/
       if (sep_pos <= 0)
         return root[i];
       return get_from_name(root[i], name.substr(sep_pos+1));
@@ -298,29 +337,30 @@ namespace swri
       if (!root[group])
       {
         YAML::Node n(YAML::NodeType::Sequence);
-        //n["_t"] = 5;
         root[group] = n;
       }
       return get_from_name(root[group], name.substr(sep_pos+1));
     }
 
+    // we are at the top level with no more namespaces so just return the node at this index
     //std::cout << "pos is " << sep_pos << "\n";
     return root[name];
   }
 
   bool Node::get_parameter(const std::string& na, YAML::Node& node)
   {
+    // Get the list of all a parameters and parse it out into a yaml structure based on its names
     auto params = nh_->list_parameters({}, 64);
-    auto& names = params.names;
-    //auto node = YAML::Load("[1, 2, 3]");
-    //YAML::Node no;
+
+    // create the root node and make sure it is a Sequence just in case
+    // it can automatically be upgraded to a map later
     node = YAML::Node(YAML::NodeType::Sequence);
     node[0] = YAML::Node(YAML::NodeType::Sequence);
-    //node["test"] = YAML::Node(YAML::NodeType::Sequence);
-    //node["test"][0] = 5;
+
     int count = 0;
-    for (auto name: names)
+    for (auto name: params.names)
     {
+      // Get the value of the ros parameter
       rclcpp::parameter::ParameterVariant param;
       nh_->get_parameter(name, param); 
 
@@ -335,8 +375,10 @@ namespace swri
 
       count++;
 
+      // Get/create the YAML:Node associated with that name
       YAML::Node n = get_from_name(node, name.substr(na.length() + 1));
       
+      // Set the YAML::Node value based on the ROS parameter value and type
       if (type == rclcpp::parameter::ParameterType::PARAMETER_DOUBLE)
         n = param.as_double();
       else if (type == rclcpp::parameter::ParameterType::PARAMETER_BOOL)
@@ -346,17 +388,17 @@ namespace swri
       else if (type == rclcpp::parameter::ParameterType::PARAMETER_STRING)
         n = param.as_string();
     }
-    //std::cout << "\n\n\n";
     std::cout << node;
     return count != 0;
   }
 
   void Node::parse_remap(const std::string& val)
   {
+    // Use a split at the ;= to find the from and to names for the remapping
     int split = val.find(";=");
     std::string name = val.substr(0, split);
     std::string value = val.substr(split+2);
-    ROS_INFO("Got remap '%s' with value '%s'", name.c_str(), value.c_str());
+    //ROS_INFO("Got remap '%s' with value '%s'", name.c_str(), value.c_str());
 
     remappings_[name] = value;
   }

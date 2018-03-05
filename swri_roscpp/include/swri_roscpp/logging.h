@@ -26,6 +26,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // *****************************************************************************
+
 #ifndef SWRI_ROSCPP_LOGGING_H_
 #define SWRI_ROSCPP_LOGGING_H_
 
@@ -151,7 +152,7 @@
 namespace swri
 {
   // The node handle used for all of the loggers
-  extern std::shared_ptr<rclcpp::Node> _node_handle;
+  extern std::weak_ptr<rclcpp::Node> _node_handle;
 
   extern rclcpp::Clock _logging_clock;
 

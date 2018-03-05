@@ -174,7 +174,7 @@ class SubscriberImpl
   rclcpp::Duration age(const rclcpp::Time &now) const
   {
     if (message_count_ < 1) {
-      return rclcpp::Duration(1000000, 1000000);
+      return swri::DURATION_MAX;
     } else {
       return now - last_header_stamp_;
     }
@@ -183,16 +183,16 @@ class SubscriberImpl
   rclcpp::Duration meanLatency() const
   {
     if (message_count_ < 1) {
-      return DURATION_MAX;
+      return swri::DURATION_MAX;
     } else {
-      return rclcpp::Duration((total_latency_.nanoseconds()/1000000000.0) / message_count_);
+      return swri::Duration(swri::toSec(total_latency_) / message_count_);
     }
   }
 
   rclcpp::Duration minLatency() const
   {
     if (message_count_ < 1) {
-      return DURATION_MAX;
+      return swri::DURATION_MAX;
     } else {
       return min_latency_;
     }
@@ -201,7 +201,7 @@ class SubscriberImpl
   rclcpp::Duration maxLatency() const
   {
     if (message_count_ < 1) {
-      return DURATION_MAX;
+      return swri::DURATION_MAX;
     } else {
       return max_latency_;
     }
@@ -219,17 +219,16 @@ class SubscriberImpl
   rclcpp::Duration meanPeriod() const
   {
     if (message_count_ < 2) {
-      return DURATION_MAX;
+      return swri::DURATION_MAX;
     } else {
-      double seconds = (total_periods_.nanoseconds()/1000000000.0) / (message_count_ - 1);
-      return rclcpp::Duration(seconds, static_cast<int32_t>(seconds*1000000000.0)%1000000000);
+      return swri::Duration(swri::toSec(total_periods_) / (message_count_ -1));
     }
   }
 
   rclcpp::Duration minPeriod() const
   {
     if (message_count_ < 2) {
-      return DURATION_MAX;
+      return swri::DURATION_MAX;
     } else {
       return min_period_;
     }
@@ -238,7 +237,7 @@ class SubscriberImpl
   rclcpp::Duration maxPeriod() const
   {
     if (message_count_ < 2) {
-      return DURATION_MAX;
+      return swri::DURATION_MAX;
     } else {
       return max_period_;
     }
@@ -332,11 +331,14 @@ class TypedSubscriberImpl : public SubscriberImpl
     callback_ = fp;
     obj_ = obj;
     //transport_hints.depth = queue_size;
+    
+    rmw_qos_profile_t hints = transport_hints;
+    hints.depth = queue_size;
 
     sub_ = nh->create_subscription<M>(mapped_topic_,
                         std::bind(&TypedSubscriberImpl::handleMessage<M>,
                         this, std::placeholders::_1),
-                        transport_hints);
+                        hints);
   }
 
   // Handler for messages with headers
@@ -438,7 +440,6 @@ class StorageSubscriberImpl : public SubscriberImpl
     }
 
     dest_ = dest;
-    //transport_hints.depth = 2;
     sub_ = nh->create_subscription<M>(mapped_topic_,
                         std::bind(&StorageSubscriberImpl::handleMessage<M>,
                         this, std::placeholders::_1),

@@ -53,15 +53,17 @@ class Node
   std::shared_ptr<rclcpp::ParameterService> parameter_service_;
   rclcpp::Service<swri_roscpp::srv::Interrogate>::SharedPtr info_service_;
   std::map<std::string, std::string> remappings_;
+  rclcpp::TimerBase::SharedPtr startup_timer_;
  public:
+
   std::shared_ptr<rclcpp::Node> nh_;
 
- public:
   Node(std::string name) : node_name_(name)
   {
 
   }
 
+  // Look up static remappings
   std::string ResolveName(const std::string& name) const
   {
     auto iter = remappings_.find(name);
@@ -78,17 +80,6 @@ class Node
   rclcpp::TimerBase::SharedPtr create_wall_timer(double period, CallbackT callback)
   {
     return nh_->create_wall_timer(std::chrono::duration<int64_t, std::micro>((int64_t)(period*1000000.0)), callback);
-  }
-
-  template<class M, class CallbackT>
-  rclcpp::SubscriptionBase::SharedPtr create_subscription(const std::string& topic, CallbackT callback,
-    const rmw_qos_profile_t& transport_hints)
-  {
-    auto sub = nh_->create_subscription<M>(topic,
-                        callback,
-                        transport_hints);
-    topic_type_map_[sub->get_topic_name()] = STRINGIZE(M);
-    return sub;
   }
 
   template<class CallbackT>
@@ -108,16 +99,29 @@ class Node
       std::chrono::nanoseconds(1),
       [callback](rclcpp::TimerBase & timer)
       {
-        //ROS_INFO("Timer callback");
         timer.cancel();
         callback();
-    });
-    //register the timer and make sure to cancel it
+      });
+
+    // Register the timer and make sure to cancel it so it only gets called when we want
     timer->cancel();
     nh_->get_node_timers_interface()->add_timer(timer, nullptr);
     add_timer(timer, period);
     timer->cancel();
     return timer;
+  }
+
+  // Wrappers for create_subscription and publisher that handle static remappings
+  template<class M, class CallbackT>
+  rclcpp::SubscriptionBase::SharedPtr create_subscription(const std::string& topic, CallbackT callback,
+    const rmw_qos_profile_t& transport_hints)
+  {
+    auto sub = nh_->create_subscription<M>(topic,
+                        callback,
+                        transport_hints);
+    // Record the type for this topic for rostopic/rosnode info
+    topic_type_map_[sub->get_topic_name()] = STRINGIZE(M);
+    return sub;
   }
 
   template<class M>
@@ -126,11 +130,13 @@ class Node
   {
     auto pub = nh_->create_publisher<M>(topic,
                         transport_hints);
+    // Record the type for this topic for rostopic/rosnode info
     topic_type_map_[pub->get_topic_name()] = STRINGIZE(M);
     pubs_.push_back(pub);
     return pub;
   }
 
+  // Returns a YAML::Node for a given parameter and its children
   bool get_parameter(const std::string& n, YAML::Node& node);
 
  private:
@@ -143,6 +149,7 @@ class Node
 
   void add_timer(std::weak_ptr<rclcpp::TimerBase> timer, double period);
 
+  // Callback for nodelets to implement
   virtual void onInit() = 0;
 };  // class Node
 
