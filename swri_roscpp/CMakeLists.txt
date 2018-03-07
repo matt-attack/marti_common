@@ -63,7 +63,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 #target_link_libraries(param_example ${LIBS})
 
 add_executable(nodelet
-  src/nodelet.cpp
+  src/nodes/nodelet.cpp
 )
 ament_target_dependencies(nodelet
   class_loader
@@ -81,7 +81,7 @@ rosidl_target_interfaces(nodelet
 )
 
 
-add_executable(nodelet_manager src/nodelet_manager.cpp)
+add_executable(nodelet_manager src/nodes/nodelet_manager.cpp)
 ament_target_dependencies(nodelet_manager
   class_loader
   rcutils
@@ -99,7 +99,7 @@ target_link_libraries(nodelet_manager
   ament_index_cpp::ament_index_cpp
 )
 
-add_executable(node_info src/node_info.cpp)
+add_executable(node_info src/nodes/node_info.cpp)
 ament_target_dependencies(node_info
   rcutils
   rclcpp
@@ -116,7 +116,7 @@ target_link_libraries(node_info
   ament_index_cpp::ament_index_cpp
 )
 
-add_executable(topic_info src/topic_info.cpp)
+add_executable(topic_info src/nodes/topic_info.cpp)
 ament_target_dependencies(topic_info
   rcutils
   rclcpp

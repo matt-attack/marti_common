@@ -36,6 +36,8 @@ namespace swri
   std::weak_ptr<rclcpp::Node> _node_handle;
   rclcpp::Publisher<rosgraph_msgs::msg::Log>::SharedPtr _log_pub;
 
+  rclcpp::Clock _logging_clock;
+
   std::mutex _logging_setup_mutex;
 
   void output_handler(rcutils_log_location_t * location,

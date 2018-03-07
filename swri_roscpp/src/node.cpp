@@ -49,6 +49,88 @@ namespace swri
     rclcpp::Time last_run;
   };
   static std::vector<TimerWatch> timers;
+
+  void Node::interrogate_callback( 
+      const std::shared_ptr<rmw_request_id_t>,
+      const std::shared_ptr<swri_roscpp::srv::Interrogate::Request> request,
+      std::shared_ptr<swri_roscpp::srv::Interrogate::Response> response)
+  {
+    for (auto cb: nh_->get_callback_groups())
+    {
+      auto cbh = cb.lock();
+      if (!cbh)
+      {
+        continue;
+      }
+
+      for (auto sub : cbh->get_subscription_ptrs())
+      {
+        auto subp = sub.lock();
+        if (subp)
+        {
+          //subp
+          rcl_subscription_t * rcl_sub = subp->get_subscription_handle();
+          rmw_subscription_t * rmw_sub = rcl_subscription_get_rmw_handle(rcl_sub);
+          eprosima::fastrtps::Subscriber * p = rmw_fastrtps_cpp::get_subscriber(rmw_sub);
+          //auto attribs = p->getAttributes();
+           
+
+          response->subscriptions.push_back(subp->get_topic_name());
+          std::string res = typeid(*subp).name();//this->topic_type_map_[pt->get_topic_name()];
+          //remove the Subscription part
+          res = res.substr(res.find("tion") + 4, res.length());
+          response->subscription_types.push_back(res);
+        }
+      }
+
+      for (auto client : cbh->get_client_ptrs())
+      {
+        auto subp = client.lock();
+        if (subp)
+        {
+          response->service_clients.push_back("/" + node_namespace_ + "/"+subp->get_service_name());
+          std::string res = typeid(*subp).name();//this->topic_type_map_[pt->get_topic_name()];
+          //remove the Subscription part
+          res = res.substr(res.find("Client") + 5, res.length());
+          response->service_client_types.push_back(res);
+        }
+      }
+
+      for (auto serv : cbh->get_service_ptrs())
+      {
+        auto subp = serv.lock();
+        if (subp)
+        {
+          response->service_servers.push_back("/" + node_namespace_ + "/"+subp->get_service_name());
+          std::string res = typeid(*subp).name();//this->topic_type_map_[pt->get_topic_name()];
+          //remove the Subscription part
+          res = res.substr(res.find("Service") + 6, res.length());
+          response->service_server_types.push_back(res);
+        }
+      }
+    }
+
+    //for (auto ii: subs_)
+    //{
+    //  if (auto pt = ii.lock())
+    //  {
+    //    response->subscriptions.push_back(pt->get_topic_name());
+    //    auto res = this->topic_type_map_[pt->get_topic_name()];
+    //   response->subscription_types.push_back(res);
+    //  }
+    //}
+
+    for (auto ii: pubs_)
+    {
+      if (auto pt = ii.lock())
+      {
+        response->publications.push_back(pt->get_topic_name());
+        auto res = topic_type_map_[pt->get_topic_name()];
+        response->publication_types.push_back(res);
+      }
+    }
+  }
+
   void Node::Initialize(int argc, char** argv, bool is_nodelet)
   {
     // Scan the arguments for the node's name and namespace
@@ -83,88 +165,9 @@ namespace swri
     // host a parameter service for each node
     //parameter_service_ = std::make_shared<rclcpp::ParameterService>(nh_);
 
-    /*info_service_ = nh_->create_service<swri_roscpp::srv::Interrogate>(
-    node_name_+"/info",
-    [this](
-      const std::shared_ptr<rmw_request_id_t>,
-      const std::shared_ptr<swri_roscpp::srv::Interrogate::Request> request,
-      std::shared_ptr<swri_roscpp::srv::Interrogate::Response> response)
-    {
-      for (auto cb: nh_->get_callback_groups())
-      {
-        auto cbh = cb.lock();
-        if (!cbh)
-        {
-          continue;
-        }
-
-        for (auto sub : cbh->get_subscription_ptrs())
-        {
-          auto subp = sub.lock();
-          if (subp)
-          {
-            //subp
-            rcl_subscription_t * rcl_sub = subp->get_subscription_handle();
-            rmw_subscription_t * rmw_sub = rcl_subscription_get_rmw_handle(rcl_sub);
-            eprosima::fastrtps::Subscriber * p = rmw_fastrtps_cpp::get_subscriber(rmw_sub);
-            //auto attribs = p->getAttributes();
-            
-
-            response->subscriptions.push_back(subp->get_topic_name());
-            std::string res = typeid(*subp).name();//this->topic_type_map_[pt->get_topic_name()];
-            //remove the Subscription part
-            res = res.substr(res.find("tion")+4, res.length());
-            response->subscription_types.push_back(res);
-          }
-        }
-
-        for (auto client : cbh->get_client_ptrs())
-        {
-          auto subp = client.lock();
-          if (subp)
-          {
-            response->service_clients.push_back("/"+node_namespace_+"/"+subp->get_service_name());
-            std::string res = typeid(*subp).name();//this->topic_type_map_[pt->get_topic_name()];
-            //remove the Subscription part
-            res = res.substr(res.find("Client")+5, res.length());
-            response->service_client_types.push_back(res);
-          }
-        }
-
-        for (auto serv : cbh->get_service_ptrs())
-        {
-          auto subp = serv.lock();
-          if (subp)
-          {
-            response->service_servers.push_back("/"+node_namespace_+"/"+subp->get_service_name());
-            std::string res = typeid(*subp).name();//this->topic_type_map_[pt->get_topic_name()];
-            //remove the Subscription part
-            res = res.substr(res.find("Service")+6, res.length());
-            response->service_server_types.push_back(res);
-          }
-        }
-      }
-
-      //for (auto ii: subs_)
-      //{
-      //  if (auto pt = ii.lock())
-      //  {
-      //    response->subscriptions.push_back(pt->get_topic_name());
-      //    auto res = this->topic_type_map_[pt->get_topic_name()];
-       //   response->subscription_types.push_back(res);
-      //  }
-      //}
-
-      for (auto ii: pubs_)
-      {
-        if (auto pt = ii.lock())
-        {
-          response->publications.push_back(pt->get_topic_name());
-          auto res = this->topic_type_map_[pt->get_topic_name()];
-          response->publication_types.push_back(res);
-        }
-      }
-    });*/
+    info_service_ = nh_->create_service<swri_roscpp::srv::Interrogate>(
+    node_name_+"/info", std::bind(&swri::Node::interrogate_callback, this,
+     std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 
     //auto parameter_client = std::make_shared<rclcpp::AsyncParametersClient>(nh_);
 
@@ -173,7 +176,14 @@ namespace swri
 
     if (is_nodelet)
     {
-      startup_timer_ = create_wall_timer(4.0, [this]() { ROS_ERROR("Timer Callback"); this->onInit(); this->startup_timer_->cancel(); ROS_ERROR("Finished Timer Callback"); });
+      startup_timer_ = create_wall_timer(4.0, 
+        [this]() 
+        { 
+          ROS_ERROR("Timer Callback"); 
+          this->onInit(); 
+          this->startup_timer_->cancel(); 
+          ROS_ERROR("Finished Timer Callback"); 
+        });
     }
     else
     {
@@ -211,7 +221,8 @@ namespace swri
             rclcpp::Time now = node->now();
 
             // Run if we have exceded our period or time has jumped substantially
-            if (now > t.last_run + t.period || abs(now.nanoseconds() - t.last_run.nanoseconds()) > t.period.nanoseconds()*50)
+            if (now > t.last_run + t.period 
+                || abs(now.nanoseconds() - t.last_run.nanoseconds()) > t.period.nanoseconds()*50)
             {
               // Don't run on startup
               if (now.nanoseconds() == 0)
@@ -254,8 +265,8 @@ namespace swri
         continue;
       }
      
-      // Handle parsing remappings which are given by ;= instead of :=
-      if (val.find(";=") != -1)
+      // Handle parsing remappings which are given by += instead of :=
+      if (val.find("+=") != -1)
       {
         parse_remap(val);
         continue;
@@ -394,8 +405,8 @@ namespace swri
 
   void Node::parse_remap(const std::string& val)
   {
-    // Use a split at the ;= to find the from and to names for the remapping
-    int split = val.find(";=");
+    // Use a split at the += to find the from and to names for the remapping
+    int split = val.find("+=");
     std::string name = val.substr(0, split);
     std::string value = val.substr(split+2);
     //ROS_INFO("Got remap '%s' with value '%s'", name.c_str(), value.c_str());

@@ -149,6 +149,11 @@ class Node
 
   void add_timer(std::weak_ptr<rclcpp::TimerBase> timer, double period);
 
+  void interrogate_callback(
+      const std::shared_ptr<rmw_request_id_t>,
+      const std::shared_ptr<swri_roscpp::srv::Interrogate::Request> request,
+      std::shared_ptr<swri_roscpp::srv::Interrogate::Response> response);
+
   // Callback for nodelets to implement
   virtual void onInit() = 0;
 };  // class Node
